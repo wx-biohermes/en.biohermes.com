@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+	<!-- Open Graph Meta Tags 开始 -->
+	<meta content="{$my_web_url}"
+	      property="og:url">
+	<meta content="website"
+	      property="og:type">
+	<meta content="{$meta_title}"
+	      property="og:title">
+	<meta content="{$meta_description}"
+	      property="og:description">
+	<meta content="{SITE_LOGO}"
+	      property="og:image">
+	<meta content="300"
+	      property="og:image:width">
+	<meta content="80"
+	      property="og:image:height">
+	<meta content="en_US"
+	      property="og:locale"/>
+	<!-- Open Graph Meta Tags 结束 -->
+	<!-- Twitter Meta Tags 开始 -->
+	<meta content="{SITE_LOGO}"
+	      name="twitter:card">
+	<meta content="biohermes.com"
+	      property="twitter:domain">
+	<meta content="{$my_web_url}"
+	      property="twitter:url">
+	<meta content="{$meta_title}"
+	      name="twitter:title">
+	<meta content="{$meta_description}"
+	      name="twitter:description">
+	<meta content="{SITE_LOGO}"
+	      name="twitter:image">
+	<!-- Twitter Meta Tags 结束 -->
+	{template "common/common_head.html"}
+	<link href="{HOME_THEME_PATH}css/extension-swiper.min.css?v=2.2"
+	      rel="stylesheet">
+	<link href="{HOME_THEME_PATH}css/index.min.css?v=2.2"
+	      rel="stylesheet">
+</head>
+
+<body>
+{template "common/common_nav.html"}
+<main id="homeFullpage">
+	<!-- 开始 第1屏-->
+	<section class="section"
+	         id="homeSection1">
+		<!-- 开始 轮播图 -->
+		<div class="swiper">
+			<!-- 开始 轮播图 容器 -->
+			<div class="swiper-wrapper">
+				<!-- 开始 轮播图 容器 幻灯片 第 1 张 -->
+				<div class="swiper-slide">
+					<a class="uk-display-inline-block uk-inline"
+					   href="#"
+					   style="width: 100vw;height: 100vh;">
+						<picture class="">
+							<source media="(max-width: 599px)"
+							        srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner1-small.webp?v=2.0">
+							<source media="(min-width: 600px)"
+							        srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner1-bg-big.webp?v=1.4">
+							<img alt=""
+							     class="swiper-slide_img"
+							     data-src="{SYS_ATTACHMENT_URL}static/img/banner/banner1-bg-big.webp?v=1.3"
+							     data-srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner1-bg-big.webp?v=1.4"
+							     uk-img>
+						</picture>
+						<div class="uk-container uk-container-xlarge uk-position-cover">
+							<!-- 开始 电脑端 内容 -->
+							<img alt=""
+							     class="uk-width-1-1 uk-visible@s"
+							     data-src="{SYS_ATTACHMENT_URL}static/img/banner/banner1-con-big.webp?v=2.7"
+							     uk-img>
+							<!-- 结束 电脑端 内容 -->
+						</div>
+					</a>
+				</div>
+				<!-- 开始 轮播图 容器 幻灯片 第 1 张 -->
+				<!-- 开始 轮播图 容器 幻灯片 第 2 张 -->
+				<div class="swiper-slide">
+					{content module=product id=30 return=cc}
+					<a class="uk-display-inline-block uk-inline"
+					   href="{$cc.url}"
+					   style="width: 100vw;height: 100vh;">
+						<picture class="">
+							<source media="(max-width: 599px)"
+							        srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner2-bg-small.webp?v=1.4">
+							<source media="(min-width: 600px)"
+							        srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner2-bg-big.webp?v=1.2">
+							<img alt=""
+							     class="swiper-slide_img"
+							     data-src="{SYS_ATTACHMENT_URL}static/img/banner/banner2-bg-big.webp?v=1.2"
+							     data-srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner2-bg-big.webp?v=1.2"
+							     uk-img>
+						</picture>
+						<div class="uk-container uk-container-xlarge uk-position-cover">
+							<!-- 开始 电脑端 内容 -->
+							<img alt=""
+							     class="uk-width-1-1 uk-visible@s"
+							     data-src="{SYS_ATTACHMENT_URL}static/img/banner/banner2-con-big.webp?v=2.7"
+							     uk-img>
+							<!-- 结束 电脑端 内容 -->
+							<!-- 开始 手机端 内容 -->
+							<img alt=""
+							     class="uk-width-1-1 uk-hidden@s"
+							     data-src="{SYS_ATTACHMENT_URL}static/img/banner/banner2-con-small.webp?v=3.9"
+							     uk-img>
+							<!-- 结束 手机端 内容 -->
+						</div>
+					</a>
+					{/content}
+				</div>
+				<!-- 开始 轮播图 容器 幻灯片 第 2 张 -->
+				<!-- 开始 轮播图 容器 幻灯片 第 3 张 -->
+				<div class="swiper-slide">
+					{content module=product id=24 return=cc}
+					<a class="uk-display-inline-block uk-inline"
+					   href="{$cc.url}"
+					   style="width: 100vw;height: 100vh;">
+						<picture class="">
+							<source media="(max-width: 599px)"
+							        srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner3-bg.webp?x-oss-process=image/resize,m_fill,w_640,h_1280,limit_0&v=1.2">
+							<source media="(min-width: 600px)"
+							        srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner3-bg.webp?v=1.2">
+							<img alt=""
+							     class="swiper-slide_img"
+							     data-src="{SYS_ATTACHMENT_URL}static/img/banner/banner3-bg.webp?v=1.2"
+							     data-srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner3-bg.webp?v=1.2"
+							     uk-img>
+						</picture>
+						<div class="uk-container uk-container-xlarge uk-position-cover">
+							<!-- 开始 电脑端 内容 -->
+							<img alt=""
+							     class="uk-width-1-1 uk-visible@s"
+							     data-src="{SYS_ATTACHMENT_URL}static/img/banner/banner3-con-big.webp?v=2.4"
+							     uk-img>
+							<!-- 结束 电脑端 内容 -->
+							<!-- 开始 手机端 内容 -->
+							<img alt=""
+							     class="uk-width-1-1 uk-hidden@s uk-padding"
+							     data-src="{SYS_ATTACHMENT_URL}static/img/banner/banner3-con-small.webp?v=3.5"
+							     uk-img>
+							<!-- 结束 手机端 内容 -->
+						</div>
+					</a>
+					{/content}
+				</div>
+				<!-- 结束 轮播图 容器 幻灯片 第 3 张 -->
+				<!-- 开始 轮播图 容器 幻灯片 第 4 张 -->
+				<div class="swiper-slide">
+					{content module=product id=27 return=cc}
+					<a class="uk-display-inline-block uk-inline"
+					   href="{$cc.url}"
+					   style="width: 100vw;height: 100vh;">
+						<picture class="">
+							<source media="(max-width: 599px)"
+							        srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner4-bg.webp?x-oss-process=image/resize,m_fill,w_640,h_1280,limit_0&v=1.2">
+							<source media="(min-width: 600px)"
+							        srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner4-bg.webp?v=1.2">
+							<img alt=""
+							     class="swiper-slide_img"
+							     data-src="{SYS_ATTACHMENT_URL}static/img/banner/banner4-bg.webp?v=2.2"
+							     data-srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner4-bg.webp?v=2.2"
+							     uk-img>
+						</picture>
+						<div class="uk-container uk-container-xlarge uk-position-cover">
+							<!-- 开始 电脑端 内容 -->
+							<img alt=""
+							     class="uk-width-1-1 uk-visible@s"
+							     data-src="{SYS_ATTACHMENT_URL}static/img/banner/banner4-con-big.webp?v=2.3"
+							     uk-img>
+							<!-- 结束 电脑端 内容 -->
+							<!-- 开始 手机端 内容 -->
+							<img alt=""
+							     class="uk-width-1-1 uk-hidden@s uk-padding"
+							     data-src="{SYS_ATTACHMENT_URL}static/img/banner/banner4-con-small.webp?v=3.8"
+							     uk-img>
+							<!-- 结束 手机端 内容 -->
+						</div>
+					</a>
+					{/content}
+				</div>
+				<!-- 结束 轮播图 容器 幻灯片 第 4 张 -->
+				<!-- 开始 轮播图 容器 幻灯片 第 5 张 -->
+				<div class="swiper-slide">
+					{content module=product id=40 return=cc}
+					<a class="uk-display-inline-block uk-inline"
+					   href="{$cc.url}"
+					   style="width: 100vw;height: 100vh;">
+						<picture class="">
+							<source media="(max-width: 599px)"
+							        srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner5-bg.webp?x-oss-process=image/resize,m_fill,w_640,h_1280,limit_0&v=1.2">
+							<source media="(min-width: 600px)"
+							        srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner5-bg.webp?v=1.2">
+							<img alt=""
+							     class="swiper-slide_img"
+							     data-src="{SYS_ATTACHMENT_URL}static/img/banner/banner5-bg.webp?v=2.2"
+							     data-srcset="{SYS_ATTACHMENT_URL}static/img/banner/banner5-bg.webp?v=2.2"
+							     uk-img>
+						</picture>
+						<div class="uk-container uk-container-xlarge uk-position-cover">
+							<!-- 开始 电脑端 内容 -->
+							<img alt=""
+							     class="uk-width-1-1 uk-visible@s"
+							     data-src="{SYS_ATTACHMENT_URL}static/img/banner/banner5-con-big.webp?v=2.5"
+							     uk-img>
+							<!-- 结束 电脑端 内容 -->
+							<!-- 开始 手机端 内容 -->
+							<img alt=""
+							     class="uk-width-1-1 uk-hidden@s uk-padding"
+							     data-src="{SYS_ATTACHMENT_URL}static/img/banner/banner5-con-small.webp?v=3.8"
+							     uk-img>
+							<!-- 结束 手机端 内容 -->
+						</div>
+					</a>
+					{/content}
+				</div>
+				<!-- 结束 轮播图 容器 幻灯片 第 5 张 -->
+			</div>
+			<!-- 结束 轮播图 容器 -->
+			
+			<!-- 开始 轮播图 滑动按钮 -->
+			<div class="swiper-tips">
+				<i class="swiper-tips_line"></i>
+				<i class="swiper-tips_bg"></i>
+			</div>
+			<!-- 结束 轮播图 滑动按钮 -->
+			
+			<!-- 开始 轮播图 分页 -->
+			<div class="swiper-pagination"></div>
+			<!-- 结束 轮播图 分页 -->
+			
+			<!-- 开始 轮播图 导航 -->
+			<div class="swiper-button-prev uk-visible@m"></div>
+			<div class="swiper-button-next uk-visible@m"></div>
+			<!-- 结束 轮播图 导航 -->
+			
+			<!-- 结束 轮播图 容器 -->
+		</div>
+		<!-- 结束 轮播图 -->
+	</section>
+	<!-- 结束 第1屏 -->
+	<!-- 开始 第2屏 产品 -->
+	<!--suppress CssUnknownTarget -->
+	<section class="section uk-light uk-background-cover"
+	         id="homeSection2"
+	         style="background-image: url('{SYS_ATTACHMENT_URL}static/img/pd_bg.jpg?v=1')">
+		<div class="uk-section">
+			<div class="uk-container uk-container-xlarge">
+				
+				<div class="uk-flex uk-flex-column uk-flex-row@s uk-flex-between@s uk-flex-middle uk-margin-bottom">
+					<h2 class="uk-card uk-card-body uk-card-small uk-h2 uk-text-bold">PRODUCTS</h2>
+					<a class="uk-card uk-tile uk-card-primary uk-h4 uk-link-reset uk-flex uk-flex-middle"
+					   href="{dr_share_cat_value(2, 'url')}">
+						<span class="text-color-fff">MORE</span>
+						<span class="uk-margin-small-left"
+						      uk-icon="chevron-right"></span>
+					</a>
+				</div>
+				
+				<div class="uk-margin uk-grid uk-flex-center uk-child-width-1-1 uk-child-width-1-3@s uk-child-width-1-4@m"
+				     uk-grid
+				     uk-height-match="target: .uk-card-footer">
+					{module module=product catid=12,26,27,28,11 flag=1 num=10 order=sytjcppxz_asc}
+					<div>
+						<a class="uk-card uk-card-default uk-transition-toggle uk-animation-toggle hvr-grow-shadow hvr-float uk-border-rounded uk-link-reset"
+						   href="{$t['url']}">
+							<div class="uk-card-media-top uk-padding-small uk-inline uk-position-relative">
+								<div class="uk-cover-container">
+									<canvas height="500"
+									        width="500">
+									</canvas>
+									<img alt="{$t['name']}"
+									     src="{dr_thumb($t['thumb'], 500, 500, 0, 'width')}"
+									     style="object-fit: contain;"
+									     uk-cover>
+								</div>
+								<div class="uk-transition-fade uk-position-cover uk-overlay uk-position-z-index">
+									<div class="uk-text-meta text-color-fff uk-text-break">{if
+										$t['description']}{$t['description']}{else}{dr_strcut($t['product_introduction'])}{/if}
+									</div>
+								</div>
+							</div>
+							<div
+									class="uk-card-footer uk-padding-small text-color-fff uk-animation-slide-bottom-small uk-animation-reverse uk-text-center">
+								{$t['title']}
+							</div>
+							<div class="uk-overlay-primary uk-position-cover uk-transition-slide-bottom"></div>
+						</a>
+					</div>
+					{/module}
+				</div>
+			</div>
+		</div>
+	</section>
+	<!-- 结束 第2屏 产品 -->
+	<!-- 开始 第3屏 新闻 -->
+	<section class="section"
+	         id="homeSection3">
+		<div class="uk-section uk-section-muted">
+			<div class="uk-container uk-container-xlarge">
+				
+				<div class="uk-flex uk-flex-column uk-flex-row@s uk-flex-between@s uk-flex-middle uk-margin-bottom">
+					<h2 class="uk-card uk-card-body uk-card-small uk-h1 uk-text-bold">NEWS</h2>
+					<a class="uk-card uk-tile uk-card-primary uk-h3 uk-link-reset uk-flex uk-flex-middle"
+					   href="{dr_share_cat_value(6, 'url')}">
+						<span class="text-color-fff">NEWS CENTER</span>
+						<span class="uk-margin-small-left"
+						      uk-icon="chevron-right"></span>
+					</a>
+				</div>
+				
+				{module module=news order=inputtime catid=6 num=1}
+				<a class="uk-flex uk-flex-wrap uk-link-reset uk-box-shadow-hover-small"
+				   href="{$t.url}"
+				   uk-height-match="target: > .uk-card">
+					<div class="uk-card uk-width-1-1 uk-width-2-5@m uk-text-center">
+						<img alt="{$t['title']}"
+						     data-height=""
+						     data-src="{dr_get_file($t['thumb'])}?x-oss-process=image/resize,m_fill,w_600,h_400,limit_0&v=2.2"
+						     data-width=""
+						     uk-img>
+					</div>
+					<div class="uk-card uk-width-expand uk-padding">
+						<div class="uk-text-meta">Date.{dr_date($t['_updatetime'], 'Y.m.d')}</div>
+						<h3 class="uk-card-title uk-margin">{$t['title']}</h3>
+						<p class="uk-text-break">{$t.description}</p>
+						<div class="uk-margin-top">MORE<span class="uk-margin-left">&rarr;</span></div>
+					</div>
+				</a>
+				{/module}
+				
+				<div class="uk-margin-top uk-grid uk-grid-small uk-child-width-expand@s"
+				     style="padding: 20px 0;"
+				     uk-grid
+				     uk-height-match="target: .uk-card-title">
+					{module module=news order=RAND catid=6 num=3}
+					<div>
+						<a class="uk-display-block uk-card uk-card-small uk-card-body uk-link-reset hvr-float uk-box-shadow-hover-small"
+						   href="{$t['url']}"
+						   style="border-radius: 20px;">
+							<div class="uk-card-title uk-h4">{$t['title']}
+							</div>
+							<span class="uk-margin-small"
+							      style="display:inline-block;width: 100%;height: 3px;background-color: #e0e0e0;"></span>
+							<div class="uk-text-break">{$t['description']}</div>
+						</a>
+					</div>
+					{/module}
+				</div>
+			</div>
+		</div>
+	</section>
+	<!-- 结束 第3屏 新闻 -->
+	<!-- 开始 最后一屏-->
+	<section class="section fp-auto-height"
+	         id="Footer">
+		{template "common/common_footer.html"}
+	</section>
+	<!-- 结束 最后一屏-->
+</main>
+{template "common/common_bottom.html"}
+<script src="{HOME_THEME_PATH}js/index.js?v=2.5"></script>
+</body>
+
+</html>

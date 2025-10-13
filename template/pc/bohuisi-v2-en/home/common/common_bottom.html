@@ -1,0 +1,7 @@
+{if !is_file(WRITEPATH.'config/run_lock.php')}
+<script>
+    $(function () {
+        $.ajax({ type: "GET", dataType: "json", url: "/index.php?s=api&c=run&is_ajax=1&num=5" });
+    });
+</script>
+{/if}

@@ -1,0 +1,27 @@
+/***@font-face {
+    font-family: "Source Han Sans SC Regular";
+    src: url("../../../fonts/source-han-sans-sc/source-han-sans-sc-regular.woff") format("woff"), /* Modern Browsers */ url("../../../fonts/source-han-sans-sc/source-han-sans-sc-regular.ttf") format("truetype"); /* Safari, Android, iOS */
+}***/
+body, h1, h2, h3, h4, h5, h6 {
+    font-family: "Source Han Sans SC Regular", BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+h1, h2, h3, h4, h5, h6 {font-weight: 600;}
+
+h1 {font-size: 30px;}
+
+h2 {font-size: 24px;}
+
+h3 {font-size: 18px}
+
+h4 {font-size: 16px}
+
+h5 {font-size: 14px}
+
+h6 {font-size: 12px}
+.table-bordered {
+  border-collapse: collapse; /* 合并边框 */
+}
+.table-bordered td {
+  border: 1px solid #d3d3d3; /* 浅色边线 */
+}

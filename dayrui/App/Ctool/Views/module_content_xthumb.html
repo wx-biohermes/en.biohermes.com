@@ -1,0 +1,26 @@
+{template "header.html"}
+
+<form id="myform" class="form-horizontal" style="padding: 0 30px;">
+    <div class="note note-danger">
+        <p>{dr_lang('将远程的缩略图文件下载到本地存储，针对thumb字段为File类型有效')}</p>
+    </div>
+    <div class="form-body">
+        <div class="form-group">
+            {$select}
+        </div>
+        <div class="form-actions">
+            <div class="row">
+                <div class="col-md-12" style="text-align:right;padding-top:25px">
+                    <button type="button" onclick="dr_content_submit_todo()" class="btn blue"> <i class="fa fa-photo"></i> {dr_lang('立即执行')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    function dr_content_submit_todo() {
+        window.location.href = '{$todo_url}&'+$('#myform').serialize()
+    }
+</script>
+
+{template "footer.html"}

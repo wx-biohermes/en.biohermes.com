@@ -1,0 +1,26 @@
+{if $list}
+<div class="scroll-y mh-325px my-5">
+    {loop $list $m}
+    {php $my=\Phpcmf\Service::L('cache')->get('menu-admin-uri', $m.uri);}
+    {if $my && $ci->_is_admin_auth($m.uri)}
+    <div class="d-flex flex-stack py-2">
+        <div class="d-flex align-items-center me-2">
+            <a href="javascript:dr_go_url('{dr_url($m.uri)}', '{dr_lang($m.name)}');" class="text-gray-800 menu-link text-hover-primary fw-bold">
+                <i class="{$menu[$my.tid]['icon']}"></i>{dr_lang($menu[$my.tid]['name'])} &nbsp;&nbsp;
+                <i class="{$menu[$my.tid]['left'][$m.pid]['icon']}"></i>{dr_lang($menu[$my.tid]['left'][$m.pid]['name'])} &nbsp;&nbsp;&nbsp;
+                <i class="{$m.icon}"></i>{dr_lang($m.name)}
+            </a>
+        </div>
+    </div>
+    {/if}
+    {/loop}
+</div>
+{else}
+
+<div  id="dr_search_menu_empty"  class="text-center">
+    <div class="pb-15 fw-bold">
+        <h3 class="text-gray-600 fs-5 mb-2">{dr_lang('没有找到')}</h3>
+        <div class="text-muted fs-7">{dr_lang('建议采用短关键词搜索')}</div>
+    </div>
+</div>
+{/if}

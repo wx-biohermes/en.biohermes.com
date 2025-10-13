@@ -1,0 +1,23 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 4561772 */
+  src: url('iconfont.woff2?t=1716688193881') format('woff2'),
+       url('iconfont.woff?t=1716688193881') format('woff'),
+       url('iconfont.ttf?t=1716688193881') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-selected-checkbox:before {
+  content: "\e682";
+}
+
+.icon-unselected-checkbox:before {
+  content: "\e662";
+}
+

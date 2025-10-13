@@ -1,0 +1,133 @@
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TFDRQC8C"
+			height="0"
+			width="0"
+			style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<header class="uk-position-z-index">
+	<div class="navbar-background navbar-background-fff uk-navbar-container uk-navbar-transparent uk-box-shadow-small"
+		 uk-sticky="sel-target: .uk-navbar-container; cls-active: uk-navbar-sticky uk-background-default; cls-inactive:;"
+		 id="navbarBackground">
+		<nav class="uk-container uk-container-xlarge uk-flex-between uk-flex-middle"
+			 id="navContainer"
+			 uk-navbar="align: center; delay-hide: 100;">
+			<a class="uk-navbar-item"
+			   href="{dr_url_rel(SITE_URL)}"
+			   title="{SITE_TITLE}">
+				<img class="logo"
+					 src="{dr_url_rel(SITE_LOGO)}"
+					 alt="{SITE_TITLE}">
+			</a>
+			<!-- 开始 电脑端显示 -->
+			<div class="uk-visible@m">
+				<ul class="uk-navbar-nav">
+					<li class="{if $indexc}uk-active{/if}">
+						<a class="uk-navbar-item"
+						   href="{dr_url_rel(SITE_URL)}"
+						   title="{SITE_TITLE}">Home</a>
+					</li>
+					{category module=share pid=0 return=t1}
+					<!-- 开始 一级导航 -->
+					<li class="{if IS_SHARE && $catid && in_array($catid, $t1.catids)}uk-active{/if}">
+						<a class="uk-navbar-item"
+						   href="{$t1.url}"
+						   title="{$t1.name}">{$t1.name}{if $t1.child}<span uk-icon="chevron-down"></span>{/if}
+						</a>
+						{if $t1.child}
+						<!-- 开始 二级导航 -->
+						<div
+							 uk-dropdown="mode: hover;animation: slide-top; animate-out: true;pos: bottom-left;offset: 0;duration: 300;delay-hide: 100;">
+							<div class="uk-flex"
+								 style="max-width: 700px">
+								<ul class="uk-nav uk-dropdown-nav uk-margin-right">
+									{category module=share order=displayorder_asc pid=$t1.id return=t2}
+									<li><a class="uk-text-nowrap"
+										   href="{$t2.url}"
+										   title="{$t2.name}">{$t2.name}</a>
+									</li>
+									{/category}
+								</ul>
+								<!-- 开始 二级导航 栏目介绍 -->
+								<div>
+									<img class="uk-margin-small-bottom"
+										 src="{dr_thumb(dr_share_cat_value($t1.id, 'thumb'))}"
+										 alt="">
+									<div class="uk-margin-small-top">This is the {$t1['name']} Center of {SITE_TITLE}.
+									</div>
+								</div>
+								<!-- 结束 二级导航 栏目介绍 -->
+							</div>
+						</div>
+						<!-- 结束 二级导航 -->
+						{/if}
+					</li>
+					<!-- 结束 一级导航 -->
+					{/category}
+				</ul>
+			</div>
+			<!-- 结束 电脑端显示 -->
+			<!-- 开始 移动端显示 -->
+			<div class="uk-hidden@m">
+				<a class="uk-navbar-toggle"
+				   uk-navbar-toggle-icon
+				   href="#m-nav"
+				   uk-toggle></a>
+				<div id="m-nav"
+					 uk-offcanvas="flip: true;  overlay: true">
+					<div class="uk-offcanvas-bar">
+						<button class="uk-offcanvas-close"
+								type="button"
+								uk-close></button>
+						<ul class="uk-nav-default uk-nav-parent-icon"
+							uk-nav>
+							<li class="{if $indexc}uk-active{/if}">
+								<a class="uk-navbar-item"
+								   href="{dr_url_rel(SITE_URL)}"
+								   title="{SITE_TITLE}">Home</a>
+							</li>
+							{category module=share pid=0}
+							<li class="{if $t.child}uk-parent>{/if}">
+								<a class="uk-navbar-item"
+								   href="{$t.url}"
+								   title="{$t.name}">{$t.name}</a>
+								{if $t.child}
+								<ul class="uk-nav-sub">
+									{category module=share pid=$t.id return=t2}
+									<li>
+										<a class="uk-navbar-item"
+										   href="{$t2.url}"
+										   title="{$t2.name}">{$t2.name}</a>
+									</li>
+									{/category}
+								</ul>
+								{/if}
+							</li>
+							{/category}
+						</ul>
+					</div>
+				</div>
+			</div>
+			<!-- 结束 移动端显示 -->
+
+			<!-- 开始 多语言 -->
+			<div class="uk-navbar-item">
+				<button class="uk-button uk-button-default uk-button-small"
+						type="button">
+					<span uk-icon="world"></span>
+					<span>English</span>
+					<span uk-icon="chevron-down"></span>
+				</button>
+				<div uk-dropdown>
+					<ul class="uk-nav uk-dropdown-nav">
+						<!-- <li><a href="https://cn.biohermes.com/">中文</a></li> -->
+						<li class="uk-active"><a href="https://www.biohermes.com/">English</a></li>
+						<li><a href="https://ru.biohermes.com/">Русский язык</a></li>
+					</ul>
+				</div>
+			</div>
+			<!-- 结束 多语言 -->
+
+		</nav>
+	</div>
+</header>

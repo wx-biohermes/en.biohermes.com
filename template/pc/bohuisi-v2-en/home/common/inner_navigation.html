@@ -1,0 +1,10 @@
+<div class="uk-margin-bottom uk-flex uk-flex-center uk-grid-small"
+     uk-grid>
+  {category module=share pid=$top.id return=c1}
+  <div>
+    <a class="uk-button uk-button-default {if in_array($catid, $c1.catids)}uk-button-primary{/if}"
+       href="{$c1.url}"
+       title="{$c1.name}">{$c1.name}</a>
+  </div>
+  {/category}
+</div>

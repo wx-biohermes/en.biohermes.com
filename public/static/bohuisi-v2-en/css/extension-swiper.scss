@@ -1,0 +1,145 @@
+@import "variable";
+
+:root {
+  --swiper-navigation-size: 50px;
+  --swiper-pagination-bottom: 10vh;
+  --swiper-navigation-sides-offset: 5vw;
+  --swiper-theme-color: rgba(#{$main-color-r}, #{$main-color-g}, #{$main-color-b}, #{$main-color-a});
+  --swiper-navigation-color: #ffffff;
+}
+
+.swiper {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  
+  .swiper-slide {
+	
+	.swiper-slide_img {
+	  width: 100%;
+	  height: 100%;
+	  transition: all 2s ease;
+	  transform: scale(1.1);
+	  object-fit: cover;
+	  object-position: 50% 65%;
+	}
+	
+	&.swiper-slide-active .swiper-slide_img {
+	  transition: all 2s ease;
+	  transform: scale(1.0);
+	}
+  }
+  
+  .swiper-tips {
+	position: absolute;
+	z-index: 999;
+	bottom: 10vh;
+	left: 50%;
+	display: block;
+	width: 80px;
+	margin-left: -40px;
+	text-align: center;
+	
+	.swiper-tips_line {
+	  position: absolute;
+	  z-index: 99;
+	  bottom: 2.4375rem;
+	  left: 50%;
+	  display: block;
+	  width: 4px;
+	  height: 8px;
+	  margin-left: -2px;
+	  animation: swiper-tips_animation 3s linear .3s infinite both;
+	  border-radius: 3px;
+	  background-color: #ffffff;
+	}
+	
+	.swiper-tips_bg {
+	  position: absolute;
+	  z-index: 1;
+	  bottom: 1.5625rem;
+	  left: 50%;
+	  display: block;
+	  width: 18px;
+	  height: 30px;
+	  margin-left: -9px;
+	  border-radius: .625rem;
+	  background-color: #b9b9b9;
+	  box-shadow: 0 0 .3125rem rgba(0, 0, 0, .3);
+	}
+  }
+  
+  .swiper-overlay {
+	z-index: 999;
+	background-color: rgba(255, 255, 255, .75);
+	
+	.swiper-overlay_switch {
+	  position: absolute;
+	  top: -20px;
+	  left: calc(50% - 20px); // 向左移动一半宽度
+	  width: 46px;
+	  height: 20px; // 高度减半，形成半圆形
+	  cursor: pointer;
+	  border-top-left-radius: 20px; // 半圆形的一半
+	  border-top-right-radius: 20px; // 半圆形的另一半
+	  background-color: rgba(255, 255, 255, .75);
+	  
+	  &::after {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 10px; // 箭头宽度
+		height: 10px; // 箭头高度
+		content: '';
+		transition: all 0.3s ease;
+		transform: translate(-50%, -50%) rotate(-45deg); // 箭头方向
+		border-bottom: 2px solid #666666;
+		border-left: 2px solid #666666;
+	  }
+	}
+	
+	.swiper-overlay_card {
+	  overflow: hidden;
+	  transition: all 0.3s ease; // 添加初始状态下的过渡效果
+	  
+	}
+	
+	&.close {
+	  .swiper-overlay_switch::after {
+		transition: all 0.3s ease;
+		transform: translate(-40%, -20%) rotate(135deg);
+	  }
+	  
+	  .swiper-overlay_card {
+		height: 0;
+		padding: 0;
+		transition: all 0.3s ease; // 添加关闭时的过渡效果
+	  }
+	}
+	
+  }
+  
+  @keyframes swiper-tips_animation {
+	0%, to {
+	  transform: scale(1);
+	  transform-origin: 50% 100%;
+	  opacity: 1;
+	}
+	20%, 30% {
+	  transform: scaleY(.01);
+	  transform-origin: 50% 100%;
+	  opacity: 1;
+	}
+	31% {
+	  transform: scaleY(.01);
+	  transform-origin: 50% 0;
+	  opacity: 0;
+	}
+	50% {
+	  transform: scale(1);
+	  transform-origin: 50% 0;
+	  opacity: 1;
+	}
+  }
+  
+}

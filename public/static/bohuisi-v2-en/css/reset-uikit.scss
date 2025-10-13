@@ -1,0 +1,120 @@
+/************
+**覆盖UIkit **
+*************/
+@import "variable";
+/* 利用变量px转为rem */
+$browser-default-font-size: 16px !default;
+@function pxTorem($px) {
+  //$px为需要转换的字号
+  @return $px / $browser-default-font-size * 1rem;
+}
+
+* + address, * + dl, * + fieldset, * + figure, * + ol, * + p, * + pre, * + ul {
+  margin-top: 10px;
+}
+
+address, dl, fieldset, figure, ol, p, pre, ul {
+  margin: 0 0 10px 0;
+}
+
+.uk-navbar-item, .uk-navbar-nav > li > a, .uk-navbar-toggle, * {
+  font-family: "Source Han Sans SC VF", sans-serif !important;
+}
+
+.uk-button-primary {
+  background-color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a);
+}
+
+/* background 背景 */
+.uk-background-primary {
+  background-color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a);
+}
+
+/* badge 徽章 */
+.uk-badge {
+  background-color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a);
+}
+
+.uk-border-rounded {
+  border-radius: 20px;
+}
+
+/* button 按钮 */
+.uk-button-default:hover, .uk-button-text::before {
+  border-color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a);
+}
+
+.uk-button-link:hover {
+  color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a);
+}
+
+/* card 卡片 */
+.uk-card-default {
+  overflow: hidden;
+  color: #585858;
+  box-shadow: 0 0 pxTorem(5px) 0 rgb(0 0 0 / 30%);
+}
+
+.uk-card-primary {
+  background-color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a);
+}
+
+.uk-card-secondary {
+  background-color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a);
+}
+
+/* heading */
+.uk-h1, .uk-h2, .uk-h3, .uk-h4, .uk-h5, .uk-h6, .uk-heading-2xlarge, .uk-heading-3xlarge, .uk-heading-large, .uk-heading-medium, .uk-heading-small, .uk-heading-xlarge, h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+}
+
+/*  link 链接 */
+.uk-link-heading a:hover, .uk-link-toggle:hover .uk-link-heading, a.uk-link-heading:hover {
+  color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a);
+}
+
+/* navbar 导航栏 */
+.uk-navbar-item, .uk-navbar-nav > li > a, .uk-navbar-toggle {
+  min-height: 4rem;
+}
+
+/* overlay 遮罩 */
+.uk-overlay-default {
+  color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a);
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.uk-padding-small {
+  padding: 5px 10px;
+}
+
+/* section 区段 */
+
+/* slidenav 幻灯片导航 */
+.uk-slidenav:hover {
+  color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a);
+}
+
+/* subnav 子导航 */
+.uk-subnav-pill > .uk-active > a {
+  background-color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a);
+}
+
+/* Table */
+.uk-table th {
+  font-weight: 900;
+}
+
+/* text 文本 */
+.uk-text-primary {
+  color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a) !important;
+}
+
+/* tile 瓷砖 */
+.uk-tile {
+  padding: 10px 25px;
+}
+
+.uk-tile-primary {
+  background-color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a);
+}

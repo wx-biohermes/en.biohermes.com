@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+	<head>
+		{template "common/common_head.html"}
+	</head>
+
+	<body>
+		<!-- 开始 通用顶部 -->
+		{template "common/common_nav.html"}
+		<!-- 结束 通用顶部 -->
+		<main class="">
+			{template "common/search_slideshow.html"}
+			<!-- 开始 内容区域 -->
+			<section class="uk-container uk-section-small"
+						uk-scrollspy="cls: uk-animation-slide-bottom;">
+				<!-- 开始 列表 -->
+				<article class="uk-background-default uk-padding uk-border-rounded uk-box-shadow-small">
+					<div class="uk-flex uk-flex-middle"
+						  uk-grid>
+						<div class="uk-width-auto uk-heading-bullet uk-h4">Search Results</div>
+						<div class="uk-width-expand uk-button-group uk-flex uk-flex-right">
+							<a class="uk-button {if !$params.order || $params.order=='updatetime'}uk-button-primary{else}uk-button-default{/if} uk-button-small"
+								href="{Router::search_url($params, 'order', null)}">Sort by Times</a>
+							<a class="uk-button {if $params.order=='hits'}uk-button-primary{else}uk-button-default{/if} uk-button-small"
+								href="{Router::search_url($params, 'order', 'hits')}">Sort by Clicks</a>
+						</div>
+					</div>
+					<div class="uk-child-width-1-1@m"
+						  uk-grid>
+						<!--调用MOD_DIR模块的数据 id和total和order参数(本页面固有参数) page=1标示开启分页 urlrule分页地址规则 pagesize每页数量-->
+						{search module=MOD_DIR id=$searchid total=$sototal order=$params.order catid=$catid page=1
+						pagesize=12 cache=3600 urlrule=$urlrule return=list}
+						<div>
+							<div class="uk-link-reset uk-card uk-card-default uk-background-muted uk-box-shadow-small uk-box-shadow-hover-large uk-transition-toggle uk-grid-collapse uk-margin"
+								  uk-grid>
+								{if $list['thumb']}
+								<a class="uk-card-media-left uk-cover-container uk-width-auto uk-inline-clip uk-background-default"
+									href="{$list['url']}">
+									<img class="uk-transition-scale-up uk-transition-opaque"
+										  src="{dr_thumb($list['thumb'], 300, 200, 0, '', 1)}"
+										  alt="{$list['title']}"
+										  uk-cover>
+									<canvas width="300"
+											  height="200"></canvas>
+								</a>
+								{/if}
+								<div class="uk-width-expand">
+									<div class="uk-card-body">
+										<a class="uk-card-title uk-h3"
+											href="{$list['url']}">
+											{dr_keyword_highlight($list['title'], $keyword)}
+										</a>
+										<div class="uk-margin-small uk-text-meta">
+											Update Date: {dr_date($list['_updatetime'], 'Y.m.d')}
+										</div>
+										{if $list['thumb']}
+										<div class="uk-text-break">
+											{dr_strcut($list['description'], 150, '...')}
+										</div>
+										{else}
+										<div class="uk-text-break">
+											{dr_strcut($list['description'], $keyword, 250, '...')}
+										</div>
+										{/if}
+									</div>
+								</div>
+							</div>
+						</div>
+						{/search}
+					</div>
+					{if $return_list !=true}
+					<div class="uk-text-center text_spacing">—— No relevant content found yet ——</div>
+					{/if}
+					<!-- 开始 分页按钮 -->
+					<div class="page_flip">{$pages_list}</div>
+					<!-- 结束 分页按钮 -->
+				</article>
+				<!-- 结束 列表 -->
+			</section>
+			<!-- 结束 内容区域 -->
+		</main>
+		<!-- 开始 通用底部 -->
+		{template "common/common_footer.html"}
+		<!-- 结束 通用底部 -->
+		{template "common/common_bottom.html"}
+	</body>
+
+</html>

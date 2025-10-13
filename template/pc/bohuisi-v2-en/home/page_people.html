@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+	<!-- Open Graph Meta Tags 开始 -->
+	<meta property="og:url"
+		  content="{$my_web_url}">
+	<meta property="og:type"
+		  content="website">
+	<meta property="og:title"
+		  content="{$meta_title}">
+	<meta property="og:description"
+		  content="{$meta_description}">
+	<meta property="og:image"
+		  content="{SITE_LOGO}">
+	<meta property="og:image:width"
+		  content="300">
+	<meta property="og:image:height"
+		  content="80">
+	<meta property="og:locale"
+		  content="en_US" />
+	<!-- Open Graph Meta Tags 结束 -->
+	<!-- Twitter Meta Tags 开始 -->
+	<meta name="twitter:card"
+		  content="{SITE_LOGO}">
+	<meta property="twitter:domain"
+		  content="biohermes.com">
+	<meta property="twitter:url"
+		  content="{$my_web_url}">
+	<meta name="twitter:title"
+		  content="{$meta_title}">
+	<meta name="twitter:description"
+		  content="{$meta_description}">
+	<meta name="twitter:image"
+		  content="{SITE_LOGO}">
+	<!-- Twitter Meta Tags 结束 -->
+	{template "common/common_head.html"}
+	<link href="{HOME_THEME_PATH}css/page_history.min.css?v=1"
+		  rel="stylesheet">
+</head>
+
+<body>
+	<!-- 开始 通用顶部 -->
+	{template "common/common_nav.html"}
+	<!-- 结束 通用顶部 -->
+	<main class="pageHistory">
+		{template "common/common_slideshow.html"}
+		<!-- 开始 内容区域 -->
+		<section class="uk-section uk-section-xsmall uk-background-muted">
+			<div class="uk-container">
+				<!-- 开始 内页导航条 -->
+				{template "common/inner_navigation.html"}
+				<!-- 结束 内页导航条 -->
+				<div class="uk-child-width-expand@s uk-text-center"
+					 uk-grid>
+					{php $mval = $cat['company_personnel'];}
+					{loop $mval $v}
+					<div>
+						<div class="uk-card">
+							<img src="{dr_get_file($v[1])}?x-oss-process=image/resize,m_fill,w_140,h_170,limit_0"
+								 data-height=""
+								 data-width=""
+								 alt=""
+								 uk-img="">
+							<div class="uk-h4 uk-margin-small uk-text-bolder">{$v[2]}</div>
+							<p class="uk-margin-small">{php echo nl2br((string)$v[3]);}</p>
+							<p class="uk-text-meta">{php echo nl2br((string)$v[4]);}</p>
+						</div>
+					</div>
+					{/loop}
+				</div>
+			</div>
+		</section>
+		<!-- 结束 内容区域 -->
+	</main>
+	<!-- 开始 通用底部 -->
+	{template "common/common_footer.html"}
+	<!-- 结束 通用底部 -->
+	{template "common/common_bottom.html"}
+</body>
+
+</html>

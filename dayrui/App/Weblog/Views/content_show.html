@@ -1,0 +1,72 @@
+{template "header.html"}
+<div class="note note-danger">
+    <p><a href="{$data.url}" target="_blank">{htmlspecialchars(urldecode($data.url))}</a> </p>
+</div>
+<form action="" class="form-horizontal" method="post" name="myform" id="myform">
+
+    <div class="portlet bordered light ">
+        <div class="portlet-title">
+            <div class="caption">
+                <span class="caption-subject font-green sbold ">{dr_lang('访客信息')}</span>
+            </div>
+
+            <div class="actions">
+                <div class="btn-group">
+                    <a class="btn" href="{$reply_url}"> <i class="fa fa-mail-reply"></i> {dr_lang('返回列表')}</a>
+                </div>
+            </div>
+        </div>
+        <div class="portlet-body">
+            <div class="form-body">
+
+
+                <div class="form-group">
+                    <label class="control-label col-md-2">账号</label>
+                    <div class="col-md-9"><div class="form-control-static"> {Function_list::uid($data.uid)} </div></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">发生时间</label>
+                    <div class="col-md-9"><div class="form-control-static"> {$data.inputtime} </div></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">详细地址</label>
+                    <div class="col-md-9"><div class="form-control-static"> <a href="{$data.url}" target="_blank">{htmlspecialchars(urldecode($data.url))}</a> </div></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">IP地址</label>
+                    <div class="col-md-9"><div class="form-control-static"> <a href="{dr_url($uriprefix.'/index', ['field' => 'inputip', 'keyword' => $data.inputip])}">{$data.inputip}</a> - {Function_list::ip($data.inputip)} <button type="button" onclick="dr_ajax_confirm_url('{dr_url($uriprefix.'/ip_add', ['ip' => $data.inputip])}', '{dr_lang('你确定要拉黑它吗？')}', '{dr_now_url()}')" class="btn red btn-xs"> 拉黑 </button></div></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">请求方式</label>
+                    <div class="col-md-9"><div class="form-control-static"> {$data.method} </div></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">请求参数</label>
+                    <div class="col-md-9">
+                        <textarea class="form-control" style="width: 100%; height: 300px"> {php var_export(dr_string2array($data.param));}</textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">返回结果</label>
+                    <div class="col-md-9">
+                        <textarea class="form-control" style="width: 100%; height: 300px"> {php var_export(dr_string2array($data.result));}</textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">客户端软件</label>
+                    <div class="col-md-9"><div class="form-control-static"> <a href="{dr_url($uriprefix.'/index', ['field' => 'useragent', 'keyword' => $data.useragent])}">{$data.useragent}</a> <button type="button" onclick="dr_ajax_confirm_url('{dr_url($uriprefix.'/useragent_add', ['useragent' => $data.useragent])}', '{dr_lang('你确定要拉黑它吗？')}', '{dr_now_url()}')" class="btn red btn-xs"> 拉黑 </button></div></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">客户端详情</label>
+                    <div class="col-md-9">
+                        <textarea class="form-control" style="width: 100%; height: 300px"> {php var_export(dr_string2array($data.httpinfo));}</textarea>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        </div>
+
+</form>
+
+{template "footer.html"}

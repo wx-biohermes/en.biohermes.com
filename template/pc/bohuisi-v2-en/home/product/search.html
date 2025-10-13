@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+	{template "common/common_head.html"}
+</head>
+
+<body>
+	<!-- 开始 通用顶部 -->
+	{template "common/common_nav.html"}
+	<!-- 结束 通用顶部 -->
+	<main class="">
+		{template "common/search_slideshow.html"}
+		<!-- 开始 内容区域 -->
+		<section class="uk-container uk-section-small"
+				 uk-scrollspy="cls: uk-animation-slide-bottom;">
+			<!-- 开始 列表 -->
+			<article class="uk-background-default uk-padding uk-border-rounded uk-box-shadow-small">
+				<!-- 开始 产品列表 -->
+				<div class="uk-margin uk-child-width-1-1 uk-child-width-1-4@s"
+					 uk-grid
+					 uk-height-match="target: > div > .uk-card">
+					{search module=MOD_DIR id=$searchid total=$sototal order=$params.order catid=$catid page=1
+					pagesize=12 cache=3600 urlrule=$urlrule return=t}
+					<div>
+						<a class="uk-display-block uk-card uk-card-small uk-card-body uk-card-default uk-box-shadow-small uk-link-reset hvr-float uk-box-shadow-hover-small"
+						   href="{$t.url}">
+							<img class="uk-display-block uk-margin-auto"
+								 src="{dr_thumb($t['thumb'], 200, 200, 0, 'height')}"
+								 alt="{$t['title']}"
+								 data-height=""
+								 data-width=""
+								 uk-img="">
+							<div class="uk-margin-top uk-text-meta">{dr_cat_value('MOD_DIR', $t['catid'], 'name')}</div>
+							<div class="uk-h5 uk-text-bold">{dr_keyword_highlight($t['title'], $keyword)}</div>
+						</a>
+					</div>
+					{/module}
+				</div>
+				<!-- 结束 产品列表 -->
+				{if $return !=true}
+				<div class="uk-text-center text_spacing">—— No relevant content found yet ——</div>
+				{/if}
+				<!-- 开始 分页按钮 -->
+				<div class="page_flip">{$pages_t}</div>
+				<!-- 结束 分页按钮 -->
+			</article>
+			<!-- 结束 列表 -->
+		</section>
+		<!-- 结束 内容区域 -->
+	</main>
+	<!-- 开始 通用底部 -->
+	{template "common/common_footer.html"}
+	<!-- 结束 通用底部 -->
+	{template "common/common_bottom.html"}
+</body>
+
+</html>

@@ -1,0 +1,182 @@
+{template "header.html"}
+
+<div class="note note-danger">
+    <p><a href="javascript:dr_update_cache();">{dr_lang('更改数据之后需要更新缓存之后才能生效')}</a></p>
+</div>
+<form action="" class="form-horizontal" method="post" name="myform" id="myform">
+    {$form}
+    <div class="portlet bordered light myfbody">
+        <div class="portlet-title tabbable-line">
+            <ul class="nav nav-tabs" style="float:left;">
+                <li class="{if $page==0}active{/if}">
+                    <a href="#tab_0" data-toggle="tab" onclick="$('#dr_page').val('0')"> <i class="fa fa-cog"></i> {dr_lang('插件设置')} </a>
+                </li>
+                <li class="{if $page==1}active{/if}">
+                    <a href="#tab_1" data-toggle="tab" onclick="$('#dr_page').val('1')"> <i class="fa fa-cog"></i> {dr_lang('防恶意访问')} </a>
+                </li>
+            </ul>
+        </div>
+        <div class="portlet-body">
+            <div class="tab-content">
+                <div class="tab-pane {if $page==0}active{/if}" id="tab_0">
+                    <div class="form-body">
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('功能开关')}</label>
+                            <div class="col-md-9">
+                                <input type="checkbox" name="data[use]" value="1" {if $data['use']}checked{/if} data-on-text="{dr_lang('已开启')}" data-off-text="{dr_lang('已关闭')}" data-on-color="success" data-off-color="danger" class="make-switch" data-size="small">
+
+                                <span class="help-block">{dr_lang('关闭后将不会对访客进行统计记录')}</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('是否统计后台')}</label>
+                            <div class="col-md-9">
+                                <input type="checkbox" name="data[is_admin]" value="1" {if $data['is_admin']}checked{/if} data-on-text="{dr_lang('已开启')}" data-off-text="{dr_lang('已关闭')}" data-on-color="success" data-off-color="danger" class="make-switch" data-size="small">
+
+                                <span class="help-block">{dr_lang('对后台操作的统计，一般情况下不统计后台')}</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('是否统计蜘蛛')}</label>
+                            <div class="col-md-9">
+                                <input type="checkbox" name="data[is_spider]" value="1" {if $data['is_spider']}checked{/if} data-on-text="{dr_lang('已开启')}" data-off-text="{dr_lang('已关闭')}" data-on-color="success" data-off-color="danger" class="make-switch" data-size="small">
+
+                                <span class="help-block">{dr_lang('如果蜘蛛抓取频繁的话，建议不统计蜘蛛访问，专门统计蜘蛛有蜘蛛插件')}</span>
+                            </div>
+                        </div>
+
+                        {if IS_USE_MEMBER}
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">不统计的账号</label>
+                            <div class="col-md-9">
+                                <?php echo dr_fieldform('{"name":"not_uids","fieldname":"not_uids","ismain":"1","fieldtype":"Members","setting":{"option":{"limit":"","pagesize":"","css":""},"validate":{"required":"0","pattern":"","errortips":"","check":"","filter":"","formattr":"","tips":""}},"ismember":"1"}', $data.not_uids ? implode(',', $data.not_uids) : '');?>
+
+                                <span class="help-block">{dr_lang('设置一些不做统计的账号')}</span>
+
+                            </div>
+                        </div>
+                        {/if}
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">过滤URL地址</label>
+                            <div class="col-md-9">
+                                <textarea class="form-control" style="height:100px" name="data[not_urls]">{$data.not_urls}</textarea>
+                                <span class="help-block">设置过滤URL地址不做统计，包含此地址的都会屏蔽统计，每行一个地址</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">最大存储记录上限</label>
+                            <div class="col-md-9">
+                                <label><input class="form-control " type="text" name="data[max]" value="{$data['max']}" ></label>
+                                <span class="help-block">建议设置一个最大记录上限值，否则数据库会越来越大</span>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+
+                <div class="tab-pane {if $page==1}active{/if}" id="tab_1">
+                    <div class="form-body">
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('禁止HEAD请求')}</label>
+                            <div class="col-md-9">
+                                <input type="checkbox" name="data[not_head]" value="1" {if $data['not_head']}checked{/if} data-on-text="{dr_lang('禁止')}" data-off-text="{dr_lang('开放')}" data-on-color="success" data-off-color="danger" class="make-switch" data-size="small">
+
+                                <span class="help-block">如果网站没有HEAD请求业务的话，建议禁止掉</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">禁止IP访问</label>
+                            <div class="col-md-9">
+                                <textarea class="form-control" style="height:200px" name="data[not_ips]">{$data.not_ips}</textarea>
+                                <span class="help-block">遇到恶意请求的IP，可以设置IP地址禁止访问，每行一个IP地址</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">禁止客户端访问</label>
+                            <div class="col-md-9">
+                                <textarea class="form-control" style="height:200px" name="data[not_useragent]">{$data.not_useragent}</textarea>
+                                <span class="help-block">遇到恶意请求的客户端useragent(支持模糊包含匹配)，可以设置禁止访问，每行一个useragent</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">恶意GET请求验证</label>
+                            <div class="col-md-9">
+                                <label><input class="form-control " type="text" name="data[get_time]" value="{$data['get_time']}" ></label>
+                                <label>小时内，请求</label>
+                                <label> <input class="form-control " type="text" name="data[get_total]" value="{$data['get_total']}" ></label>
+                                <label>次以上，禁止访问</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">恶意POST请求验证</label>
+                            <div class="col-md-9">
+                                <label><input class="form-control " type="text" name="data[post_time]" value="{$data['post_time']}" ></label>
+                                <label>小时内，请求</label>
+                                <label> <input class="form-control " type="text" name="data[post_total]" value="{$data['post_total']}" ></label>
+                                <label>次以上，禁止访问</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">禁止访问时提示方式</label>
+                            <div class="col-md-9">
+                                <div class="mt-radio-inline">
+                                    <label class="mt-radio mt-radio-outline"><input onclick="rr(this.value)" type="radio" name="data[not_type]" value="0" {if !$data.not_type}checked=""{/if}> 直接空白页面 <span></span></label>
+                                    <label class="mt-radio mt-radio-outline"><input onclick="rr(this.value)" type="radio" name="data[not_type]" value="1" {if $data.not_type ==1}checked=""{/if}> 显示固定文字 <span></span></label>
+                                    <label class="mt-radio mt-radio-outline"><input onclick="rr(this.value)" type="radio" name="data[not_type]" value="2" {if $data.not_type ==2}checked=""{/if}> 跳转指定URL <span></span></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group r1" style="display: none">
+                            <label class="col-md-2 control-label">禁止访问时提示文字</label>
+                            <div class="col-md-9">
+                                <textarea class="form-control" style="height:100px" name="data[not_type_html]">{$data.not_type_html}</textarea>
+                                <span class="help-block">可以直接写一段文字或者html代码</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group r2" style="display: none">
+                            <label class="col-md-2 control-label">禁止访问时跳转的URL地址</label>
+                            <div class="col-md-9">
+                                <input class="form-control " type="text" name="data[not_type_url]" value="{$data['not_type_url']}"  >
+                                <span class="help-block">填写跳转后的地址，例如: http://baidu.com/404.html</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="portlet-body form myfooter">
+            <div class="form-actions text-center">
+                <button type="button" onclick="dr_ajax_submit('{dr_now_url()}&page='+$('#dr_page').val(), 'myform', '2000')" class="btn green"> <i class="fa fa-save"></i> {dr_lang('保存')}</button>
+            </div>
+        </div>
+</form>
+
+
+<script>
+    function rr(id) {
+        $('.r1').hide();
+        $('.r2').hide();
+        $('.r'+id).show();
+    }
+    $(function () {
+        rr({intval($data.not_type)});
+    });
+</script>
+{template "footer.html"}

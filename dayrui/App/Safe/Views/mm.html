@@ -1,0 +1,135 @@
+{template "header.html"}
+<div class="note note-danger">
+    <p>
+        {if $run_time}
+        <font color="green">{dr_lang('最近自动执行时间为：%s', $run_time)}</font>
+        {else}
+        <font color="red">{dr_lang('当前服务器没有设置自动任务脚本')}</font>
+        {/if}
+    </p>
+    <p style="margin-top:5px;">{dr_lang('任务脚本地址')}：{ROOT_URL}api/cron.php</p>
+    <p style="margin-top:5px;">友情提示：当在cdn下执行会导致任务执行失败的情况，需要绑定一个非cdn域名来执行任务</p>
+</div>
+<form action="" class="form-horizontal" method="post" name="myform" id="myform">
+    {$form}
+    <div class="portlet bordered light myfbody">
+        <div class="portlet-title tabbable-line">
+            <ul class="nav nav-tabs" style="float:left;">
+                <li class="{if $page==0}active{/if}">
+                    <a href="#tab_0" data-toggle="tab" onclick="$('#dr_page').val('0')"> <i class="fa fa-cog"></i> {dr_lang('插件设置')} </a>
+                </li>
+            </ul>
+        </div>
+        <div class="portlet-body">
+            <div class="tab-content">
+                <div class="tab-pane {if $page==0}active{/if}" id="tab_0">
+                    <div class="form-body">
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">自定义特征代码</label>
+                            <div class="col-md-9">
+                                <textarea class="form-control" style="height:200px" name="data[code]">{$data.code}</textarea>
+                                <span class="help-block">{dr_lang('自定义一些木马特征代码，回车换行')}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('自定义扫描目录')}</label>
+                            <div class="col-md-9">
+                                <div class="input-group input-xlarge">
+                                    <input class="form-control " type="text" id="dr_attachment_dir" name="data[path]" value="{htmlspecialchars((string)$data['path'])}" >
+                                    <span class="input-group-btn">
+                                            <button class="btn blue" onclick="dr_test_domain()" type="button"><i class="fa fa-code"></i> {dr_lang('测试')}</button>
+                                        </span>
+                                </div>
+                                <span class="help-block">{dr_lang('不填写表示当前网站目录，如果网站做了文件分离，可以在这里填写指定扫描的目录')}</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">首页SEO标题监控</label>
+                            <div class="col-md-9">
+                                <div class="mt-radio-inline">
+                                    <label class="mt-radio mt-radio-outline"><input type="radio" name="data[index_title]" value="0" {if !$data.index_title}checked=""{/if}> 开启 <span></span></label>
+                                    <label class="mt-radio mt-radio-outline"><input type="radio" name="data[index_title]" value="1" {if $data.index_title ==1}checked=""{/if}> 关闭 <span></span></label>
+
+                                </div>
+                                <span class="help-block">首页seo标题的标签格式必须为：{php echo htmlspecialchars('<title>xxx</title>');}，当发现实际首页的title与你后台设置title不一样时，发出预警通知</span>
+                            </div>
+                        </div>
+                        <div class="form-group" style="display: none" id="dr_test_domain">
+                            <label class="col-md-2 control-label">{dr_lang('目录检测结果')}</label>
+                            <div class="col-md-9" style="padding-top: 3px; line-height: 25px; color:green" id="dr_test_domain_result">
+
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">自动扫描</label>
+                            <div class="col-md-9">
+                                <div class="mt-radio-inline">
+                                    <label class="mt-radio mt-radio-outline"><input type="radio" name="data[auto]" value="1" {if $data.auto ==1}checked=""{/if}> 自动扫描 <span></span></label>
+                                    <label class="mt-radio mt-radio-outline"><input type="radio" name="data[auto]" value="0" {if !$data.auto}checked=""{/if}> 手动扫描 <span></span></label>
+                                </div>
+                                <span class="help-block">{dr_lang('自动扫描，每天会在半夜空闲时间扫描')}</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">通知预警</label>
+                            <div class="col-md-9">
+                                <div class="input-inline input-medium">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">
+                                            邮箱
+                                        </span>
+                                        <input type="email" class="form-control" name="data[email]" value="{$data.email}" placeholder="Email Address"> </div>
+                                </div>
+                                <div class="input-inline input-medium">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">
+                                            手机
+                                        </span>
+                                        <input type="type" class="form-control"  name="data[phone]" value="{$data.phone}"> </div>
+                                </div>
+                                <span class="help-block">{dr_lang('自动扫描出问题时，会通知到管理员')}</span>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="portlet-body form myfooter">
+            <div class="form-actions text-center">
+                <button type="button" onclick="dr_ajax_submit('{dr_now_url()}&page='+$('#dr_page').val(), 'myform', '2000')" class="btn green"> <i class="fa fa-save"></i> {dr_lang('保存')}</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+<script>
+    function dr_test_domain() {
+        // 延迟加载
+        var loading = layer.load(2, {
+            shade: [0.3,'#fff'], //0.1透明度的白色背景
+            time: 5000
+        });
+        $('#dr_test_domain').hide();
+        $.ajax({type: "POST",dataType:"json", url: admin_file+"?s=safe&c=mm&m=test_index", data: $('#myform').serialize(),
+            success: function(json) {
+                layer.close(loading);
+                $('#dr_test_domain').show();
+                $('#dr_test_domain_result').html(json.msg);
+                return false;
+            },
+            error: function(HttpRequest, ajaxOptions, thrownError) {
+                dr_ajax_admin_alert_error(HttpRequest, ajaxOptions, thrownError);
+            }
+        });
+    }
+</script>
+
+{template "footer.html"}

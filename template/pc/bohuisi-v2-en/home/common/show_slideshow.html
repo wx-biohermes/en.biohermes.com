@@ -1,0 +1,24 @@
+<div class="uk-position-relative">
+	<img src="{if $cat['ymdbtp']}{dr_get_file($cat['ymdbtp'])}{else}{dr_get_file($parent['ymdbtp'])}{/if}"
+		 alt="{$title}">
+	<div class="uk-overlay-default uk-position-cover"></div>
+	<div class="uk-position-center uk-position-z-index uk-text-center">
+		<div class="uk-text-bold uk-text-uppercase text-color-fff"
+			 style="font-size: 2.5vw;">{$title}
+		</div>
+		<div class="uk-margin-small-top text-color-fff uk-flex-center uk-child-width-auto uk-text-center uk-grid-row-small"
+			 style="letter-spacing: 0.1em; font-size:1.8vw;"
+			 uk-grid>
+			<div class="">
+				<i uk-icon="icon: calendar; ratio: 0.8;"></i>
+				<span>Release Date：{dr_date($_inputtime, 'Y.m.d')}</span>
+			</div>
+			{if $_inputtime != $_updatetime}
+			<div class="">
+				<i uk-icon="icon: future; ratio: 0.8;"></i>
+				<span>Update Date：{dr_date($_updatetime, 'Y.m.d')}</span>
+			</div>
+			{/if}
+		</div>
+	</div>
+</div>

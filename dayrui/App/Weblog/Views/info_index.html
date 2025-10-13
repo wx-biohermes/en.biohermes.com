@@ -1,0 +1,213 @@
+{template "header.html"}
+
+<script src="{THEME_PATH}assets/js/echarts.min.js"></script>
+{template "api_list_date_search.html"}
+
+<div class="row table-search-tool">
+    <form action="{SELF}" method="get">
+        {dr_form_search_hidden()}
+        <div class="col-md-12 col-sm-12">
+            {loop $select $i $t}
+            <label> <a href="{dr_url(APP_DIR.'/info/index')}&tid={$i}" class="btn {if $i == $tid} btn-success{else}btn-default{/if}">{$t}</a> </label>
+            {/loop}
+        </div>
+
+        <div class="col-md-12 col-sm-12">
+            <label>
+                <div style="width: 250px" class="input-group date-picker input-daterange" data-date="" data-date-format="yyyy-mm-dd">
+                    <input type="text" class="form-control" value="{$date_form}" name="date_form">
+                    <span class="input-group-addon"> {dr_lang('到')} </span>
+                    <input type="text" class="form-control" value="{$date_to}" name="date_to">
+                </div>
+            </label>
+        </div>
+
+        <div class="col-md-12 col-sm-12">
+            <label><button type="submit" class="btn blue btn-sm onloading" name="submit" > <i class="fa fa-search"></i> {dr_lang('查询')}</button></label>
+        </div>
+    </form>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <span class="caption-subject bold uppercase font-green-haze"> 浏览量PV </span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="pv" style="height:300px;"></div>
+                <script>
+                    var myChart = echarts.init(document.getElementById('pv'));
+                    var option = {json_encode($pv)};
+                    myChart.setOption(option);
+                </script>
+
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <span class="caption-subject bold uppercase font-green-haze"> 访客数UV</span>
+                </div>
+            </div>
+            <div class="portlet-body" >
+
+                <div id="uv" style="height:300px;"></div>
+                <script>
+                    var myChart = echarts.init(document.getElementById('uv'));
+                    var option = {json_encode($uv)};
+                    myChart.setOption(option);
+                </script>
+
+
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <span class="caption-subject bold uppercase font-green-haze"> IP数</span>
+                </div>
+            </div>
+            <div class="portlet-body" >
+
+                <div id="ip" style="height:300px;"></div>
+                <script>
+                    var myChart = echarts.init(document.getElementById('ip'));
+                    var option = {json_encode($ip)};
+                    myChart.setOption(option);
+                </script>
+
+
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <span class="caption-subject bold uppercase font-green-haze"> TOP10 客户端</span>
+                </div>
+            </div>
+            <div class="portlet-body" >
+
+
+                <table class="table last-border-none table-light">
+                    <thead>
+                    <tr class="uppercase">
+                        <th width="33">  </th>
+                        <th> 客户端 </th>
+                        <th width="100"> 浏览量 </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {loop $useragent_top $key $t}
+                    <tr>  <td>
+                        <span class="label label-sm label-success"> {$key+1} </span>
+                    </td>
+                        <td> <a href="{dr_url($uriprefix.'/index', ['field' => 'useragent', 'keyword' => $t.name])}">{$t.name}</a> </td>
+                        <td>
+                            <span class="label label-sm label-success"> {$t.ct} </span>
+                        </td>
+                    </tr>
+                    {/loop}
+                    </tbody>
+                </table>
+
+
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <span class="caption-subject bold uppercase font-green-haze"> TOP10 IP</span>
+                </div>
+            </div>
+            <div class="portlet-body" >
+
+
+                <table class="table last-border-none table-light">
+                    <thead>
+                    <tr class="uppercase">
+                        <th width="33">  </th>
+                        <th> IP </th>
+                        <th width="100"> 浏览量 </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {loop $ip_top $key $t}
+                    <tr>
+                        <td>
+                            <span class="label label-sm label-success"> {$key+1} </span></td>
+                        <td> <a href="{dr_url($uriprefix.'/index', ['field' => 'inputip', 'keyword' => $t.name])}">{$t.name}</a> </td>
+                        <td>
+                            <span class="label label-sm label-success"> {$t.ct} </span>
+                        </td>
+                    </tr>
+                    {/loop}
+                    </tbody>
+                </table>
+
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-md-6">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <span class="caption-subject bold uppercase font-green-haze"> TOP10 会员</span>
+                </div>
+            </div>
+            <div class="portlet-body" >
+
+
+                <table class="table last-border-none table-light">
+                    <thead>
+                    <tr class="uppercase">
+                        <th width="33">  </th>
+                        <th> 会员 </th>
+                        <th width="100"> 浏览量 </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {loop $user_top $key $t}
+                    {php $user=dr_member_info($t.uid);}
+                    <tr>
+                        <td>
+                            <span class="label label-sm label-success"> {$key+1} </span></td>
+                        <td> <a href="{dr_url($uriprefix.'/index', ['field' => 'uid', 'keyword' => $user.username])}">{$user.username}</a> </td>
+                        <td>
+                            <span class="label label-sm label-success"> {$t.ct} </span>
+                        </td>
+                    </tr>
+                    {/loop}
+                    </tbody>
+                </table>
+
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+{template "footer.html"}

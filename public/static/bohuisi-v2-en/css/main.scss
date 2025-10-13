@@ -1,0 +1,133 @@
+@import "variable";
+
+.logo {
+  height: $navbar-height;
+  padding: 10px 0;
+}
+
+.icon {
+  overflow: hidden;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+}
+
+.table-bordered {
+  border-collapse: collapse; /* 合并边框 */
+}
+
+.table-bordered td {
+  border: 1px solid #d3d3d3; /* 浅色边线 */
+}
+
+.navbar-background {
+  background-color: rgba(248, 248, 248, 0.7);
+  
+  &.navbar-background-fff {
+	background-color: rgba(248, 248, 248, 1);
+  }
+}
+
+.text-color-fff {
+  color: #ffffff !important;
+}
+
+.text_spacing,
+.text_spacing > p {
+  letter-spacing: .125rem;
+}
+
+.text-indent > p {
+  text-indent: 2em;
+}
+
+.text-indent.text_spacing > p {
+  text-indent: 2.1em;
+}
+
+#fp-nav {
+  ul {
+	li {
+	  width: 14px;
+	  height: 13px;
+	  margin: 7px;
+	  
+	  a {
+		span {
+		  width: 6px;
+		  height: 6px;
+		  margin: -3px 0 0 -3px;
+		  background-color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a);
+		  box-shadow: 0 0 0.3rem #ffffff;
+		  
+		  &:hover {
+			width: 8px;
+			height: 8px;
+			margin: -4px 0 0 -4px;
+		  }
+		  
+		  &.active {
+			width: 12px;
+			height: 12px;
+			margin: -6px 0 0 -6px;
+		  }
+		}
+	  }
+	  
+	  .fp-tooltip {
+		font-size: 0.8rem;
+		color: rgba($main-color-r, $main-color-g, $main-color-b, $main-color-a);
+	  }
+	}
+  }
+}
+
+.web_footer {
+  line-height: 4vh;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4vh;
+  background-color: hsla(0, 0%, 100%, 0.7);
+}
+
+.page_flip {
+  margin: 2.5rem 0;
+  padding: 0.3125rem;
+  text-align: center;
+  
+  ul {
+	li {
+	  display: inline;
+	  
+	  a {
+		font-size: 0.875rem;
+		line-height: 2.625rem;
+		display: inline-block;
+		height: 2.625rem;
+		margin-left: 0.5625rem;
+		padding: 0 0.75rem;
+		text-decoration: none;
+		color: #333333;
+		border: 1px solid #e3e3e3;
+		border-radius: 0.1875rem;
+		background-color: #ffffff;
+		
+		&.active,
+		&:active,
+		&:hover {
+		  color: #ffffff;
+		  background-color: #333333;
+		}
+	  }
+	  
+	  &.disabled a {
+		margin: 0.125rem;
+		padding: 0.125rem 0.3125rem;
+		color: #dddddd;
+		border: 1px solid #eeeeee;
+	  }
+	}
+  }
+}

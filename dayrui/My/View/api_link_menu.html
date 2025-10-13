@@ -1,0 +1,12 @@
+{if $admin.usermenu}
+{php $admin.usermenu=dr_arraycut(array_reverse($admin.usermenu), 20);}
+<div class="row g-0">
+    {loop $admin.usermenu $t}
+    <div class="col-6">
+        <a  {if $t.target} href="{$t.url}" target="_blank" {else}href="javascript:dr_go_url('{$t.url}');"  {/if} class="d-flex flex-column flex-center h-100 p-4 bg-hover-light border-end border-bottom ">
+        <span class="fs-5 fw-bold text-gray-800 mb-0">{$t.name}</span>
+        </a>
+    </div>
+    {/loop}
+</div>
+{/if}

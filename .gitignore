@@ -1,0 +1,7 @@
+cache/*
+!cache/
+cache/*/*
+!cache/*/
+!cache/*/.gitkeep
+public/uploadfile/thumb/*
+!public/uploadfile/thumb/

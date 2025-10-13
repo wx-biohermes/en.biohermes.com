@@ -1,0 +1,13 @@
+<div class="uk-position-relative">
+	<img src="{if $cat['ymdbtp']}{dr_get_file($cat['ymdbtp'])}{else}{dr_get_file($parent['ymdbtp'])}{/if}"
+		 alt="{SITE_TITLE}&ensp;{$cat['name']}&ensp;CENTER">
+	<div class="uk-overlay-default uk-position-cover"></div>
+	<div class="uk-position-center uk-position-z-index uk-text-center">
+		<div class="uk-text-bold uk-text-uppercase text-color-fff"
+			 style="font-size: 2.8vw;">{SITE_TITLE}&ensp;{$cat['name']}&ensp;CENTER
+		</div>
+		<!-- <div class="uk-text-primary uk-text-uppercase uk-margin-small-top uk-text-break text-color-fff uk-text-break"
+		 style="font-size: 1.8vw;">THIS&nbsp;IS&nbsp;THE&nbsp;MAIN&nbsp;{$cat['name']}&nbsp;OF&nbsp;{SITE_TITLE}
+	</div> -->
+	</div>
+</div>

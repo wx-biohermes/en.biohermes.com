@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8" />
+    <title>{dr_lang('%s - 后台管理平台', SITE_NAME)}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="{$THEME_PATH}assets/global/css/plugins.bundle{if !IS_XRDEV}.min{/if}.css" rel="stylesheet" type="text/css" />
+    <link href="{$THEME_PATH}assets/icon/css/icon.css?v={CMF_UPDATE_TIME}" rel="stylesheet" type="text/css" />
+</head>
+<body id="kt_body" class="bg-body">
+<div class="d-flex flex-column flex-root">
+    <div class="d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed">
+
+        <div class="d-flex flex-center flex-column flex-column-fluid p-10 pb-lg-20" {if IS_PC}style="margin-top: -130px;"{/if}>
+
+            <a href="{SITE_URL}" class="mb-12">
+                <img alt="{SITE_NAME}" src="{$THEME_PATH}assets/logo-web.png" />
+            </a>
+            <div class="w-lg-500px bg-body rounded shadow-sm p-10 p-lg-15 mx-auto">
+
+                <form class="form w-100"  onsubmit="return dr_submit()" id="kt_sign_in_form" style="padding-top: 25px;" method="post" action="">
+                    {$form}
+                    <div class="fv-row mb-10">
+                        <input class="form-control form-control-lg form-control-solid" type="text" value="<?php echo  defined('DEMO_ADMIN_USERNAME') ? DEMO_ADMIN_USERNAME : ''?>" autocomplete="off" placeholder="{dr_lang('账号')}" name="data[username]" />
+                    </div>
+                    <div class="fv-row mb-10">
+                        <input class="form-control form-control-lg form-control-solid" id="password" type="password" value="<?php echo  defined('DEMO_ADMIN_PASSWORD') ? DEMO_ADMIN_PASSWORD : ''?>" autocomplete="off" placeholder="{dr_lang('密码')}" name="data[password]" />
+                    </div>
+                    {if SYS_ADMIN_CODE}
+                    <div class="row fv-row mb-7">
+                        <div class="col-xl-6">
+                            <input class="form-control form-control-lg form-control-solid" type="text" placeholder="{dr_lang('验证码')}" name="code"/>
+                        </div>
+                        <div class="col-xl-6">
+                            <label class="form-label fw-bolder text-dark fs-6 fc-code"> {dr_code(120, 35)}</label>
+                        </div>
+                    </div>
+                    {/if}
+                    {if !SYS_ADMIN_MODE}
+                    <div class="row mb-7 text-center fv-row">
+                        <div class=" align-items-center mt-3 text-center">
+                            <label class="form-check form-check-inline form-check-solid me-5">
+                                <input class="form-check-input" name="data[mode]" {if $mode == 1}checked=""{/if} type="radio" value="1" />
+                                <span class="fw-bold ps-2 fs-6">{dr_lang('完整模式')}</span>
+                            </label>
+                            <label class="form-check form-check-inline form-check-solid">
+                                <input class="form-check-input" name="data[mode]" {if $mode == 2}checked=""{/if} type="radio" value="2" />
+                                <span class="fw-bold ps-2 fs-6">{dr_lang('简化模式')}</span>
+                            </label>
+                        </div>
+                    </div>
+                    {/if}
+                    <div class="text-center">
+                        <button type="button" id="kt_sign_in_submit" class="btn btn-lg btn-primary w-100 mb-5">
+                            <span class="indicator-label">{dr_lang('登录后台')}</span>
+                            <span class="indicator-progress">{dr_lang('请求中...')}<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                        </button>
+                        {if SYS_ADMIN_OAUTH && $oauth}
+                        {loop $oauth $t}
+                        <a href="{$t.url}" class="btn btn-flex flex-center btn-light btn-lg w-100 mb-5"><i class="fa fa-{$t.name}"></i> {$t.title}</a>
+                        {/loop}
+                        {/if}
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="d-flex flex-center flex-column-auto p-10">
+            <div class="d-flex align-items-center fw-bold fs-6">
+                {if $license.name}
+                {if $license.url}
+                <a class="text-muted text-hover-primary px-2" href="{$license.url}" target="_blank">{$license.name}</a>
+                {/if}
+                {else}
+                <a class="text-muted text-hover-primary px-2" href="https://www.xunruicms.com" target="_blank">迅睿CMS开源框架</a>
+                {/if}
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{$THEME_PATH}assets/global/scripts/plugins.bundle.js"></script>
+{if defined('SYS_ADMIN_LOGIN_AES') && SYS_ADMIN_LOGIN_AES}
+<script src="{$THEME_PATH}assets/global/plugins/crypto-js.min.js?v={CMF_UPDATE_TIME}" type="text/javascript"></script>
+{else}
+<script src="{$THEME_PATH}assets/global/plugins/jquery.md5.js?v={CMF_UPDATE_TIME}" type="text/javascript"></script>
+{/if}
+<script type="text/javascript">
+    var is_admin = 2;
+    if (typeof parent.layer == 'function') {
+        parent.layer.closeAll('loading');
+    }
+    jQuery(document).ready(function() {
+        $('#kt_sign_in_form input').keypress(function (e) {
+            if (e.which == 13) {
+                dr_submit();
+            }
+        });
+    });
+    KTUtil.onDOMContentLoaded((function() {
+        var e = document.querySelector("#kt_sign_in_submit");
+        e.addEventListener("click", (function(n) {
+            e.setAttribute("data-kt-indicator", "on");
+            e.disabled = true;
+            // 这里进行md5加密存储
+            var pwd = $('#password').val();
+            if (pwd.length == 32) {
+                // 已经加密过的
+            } else {
+                {if defined('SYS_ADMIN_LOGIN_AES') && SYS_ADMIN_LOGIN_AES}
+                $('#kt_sign_in_form').append('<input type="hidden" name="is_aes" value="1">');
+                var key = CryptoJS.enc.Utf8.parse('{$crypto_key}');
+                var iv = CryptoJS.enc.Utf8.parse('{$crypto_iv}');
+                var pw = pwd;
+                pwd = CryptoJS.AES.encrypt(pwd, key, {
+                    mode: CryptoJS.mode.CBC,
+                    iv: iv,
+                    padding: CryptoJS.pad.Pkcs7
+                });
+                {if IS_DEV}
+                pwd2 = CryptoJS.AES.decrypt(pwd, key, {
+                    mode: CryptoJS.mode.CBC,
+                    iv: iv,
+                    padding: CryptoJS.pad.Pkcs7
+                });
+                pwd2 = pwd2.toString(CryptoJS.enc.Utf8);
+                if (pwd2 != pw) {
+                    alert("CryptoJS密码解析失败");
+                    return;
+                }
+                {/if}
+                    {else}
+                    pwd = $.md5(pwd); // 进行md5加密
+                    {/if}
+                $('#password').val(pwd);
+            }
+            $.ajax({type: "POST",dataType:"json", url: '{$login_url}', data: $("#kt_sign_in_form").serialize(),
+                success: function(json) {
+                    // token 更新
+                    if (json.token) {
+                        var token = json.token;
+                        $("#kt_sign_in_form input[name='"+token.name+"']").val(token.value);
+                    }
+                    if (json.code == 1) {
+                        window.location.href = json.data.url;
+                    } else {
+                        $('.fc-code img').click();
+                        Swal.fire({
+                            text: json.msg,
+                            icon: "error",
+                            buttonsStyling: !1,
+                            confirmButtonText: "{dr_lang('返回')}",
+                            customClass: {
+                                confirmButton: "btn btn-light"
+                            }
+                        });
+                    }
+                    e.removeAttribute("data-kt-indicator");
+                    e.disabled = false;
+                },
+                error: function(HttpRequest, ajaxOptions, thrownError) {
+                    e.removeAttribute("data-kt-indicator");
+                    e.disabled = false;
+                    $('.fc-code img').click();
+                    var msg = HttpRequest.responseText;
+                    if (!msg) {
+                        Swal.fire({
+                            text: "{dr_lang('系统故障')}",
+                            icon: "error",
+                            buttonsStyling: !1,
+                            confirmButtonText: "{dr_lang('返回')}",
+                            customClass: {
+                                confirmButton: "btn btn-primary"
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            text: msg,
+                            icon: "error",
+                            buttonsStyling: !1,
+                            confirmButtonText: "{dr_lang('返回')}",
+                            customClass: {
+                                confirmButton: "btn btn-primary"
+                            }
+                        });
+                    }
+                }
+            });
+        }))
+    }));
+    function dr_submit() {
+        $("#kt_sign_in_submit").click();
+    }
+</script>
+{if IS_OEM_CMS}
+<script src="{$THEME_PATH}assets/global/plugins/backstretch/jquery.backstretch.min.js?v={CMF_UPDATE_TIME}" type="text/javascript"></script>
+<script type="text/javascript">
+    <?php $bg = array('"'.$THEME_PATH.'assets/global/login/1.jpg"',
+        '"'.$THEME_PATH.'assets/global/login/2.jpg"',
+        '"'.$THEME_PATH.'assets/global/login/3.jpg"',
+        '"'.$THEME_PATH.'assets/global/login/4.jpg"');
+    shuffle($bg);
+        ?>
+    jQuery(document).ready(function() {
+        $.backstretch([
+            {implode(',', $bg)}
+    ], {
+            fade: 1000,
+                duration: 8000
+        }
+    );
+    });
+</script>
+{/if}
+{if isset($_GET['isback']) && $_GET['isback']}
+<script type="text/javascript">
+    $(function(){
+        dr_tips({intval($_GET['iscode'])}, "{dr_safe_replace($_GET['isback'])}")
+    });
+</script>
+{/if}
+</body>
+</html>

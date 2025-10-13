@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+	<!-- Open Graph Meta Tags 开始 -->
+	<meta property="og:url"
+		  content="{$my_web_url}">
+	<meta property="og:type"
+		  content="article">
+	<meta property="article:published_time"
+		  content="{$inputtime}">
+	<meta property="article:modified_time"
+		  content="{$updatetime}">
+	<meta property="article:tag"
+		  content="{$meta_keywords}">
+	<meta property="og:title"
+		  content="{$meta_title}">
+	<meta property="og:description"
+		  content="{$meta_description}">
+	<meta property="og:image"
+		  content="{dr_get_file($thumb)}">
+	<meta property="og:image:width"
+		  content="300">
+	<meta property="og:image:height"
+		  content="80">
+	<meta property="og:locale"
+		  content="en_US" />
+	<!-- Open Graph Meta Tags 结束 -->
+	<!-- Twitter Meta Tags 开始 -->
+	<meta name="twitter:card"
+		  content="{dr_get_file($thumb)}">
+	<meta property="twitter:domain"
+		  content="biohermes.com">
+	<meta property="twitter:url"
+		  content="{$my_web_url}">
+	<meta name="twitter:title"
+		  content="{$meta_title}">
+	<meta name="twitter:description"
+		  content="{$meta_description}">
+	<meta name="twitter:image"
+		  content="{dr_get_file($thumb)}">
+	<!-- Twitter Meta Tags 结束 -->
+	{template "common/common_head.html"}
+</head>
+
+<body>
+	<!-- 开始 通用顶部 -->
+	{template "common/common_nav.html"}
+	<!-- 结束 通用顶部 -->
+	<main class="">
+		{template "common/show_slideshow.html"}
+		<!-- 开始 内容区域 -->
+		<section class="uk-section uk-section-small uk-background-muted">
+			<div class="uk-container uk-margin-large-bottom">
+				<article class="uk-article uk-background-default uk-padding uk-border-rounded uk-box-shadow-small">
+					{if $content}
+					<!-- 开始 介绍内容 -->
+					<div class="uk-panel uk-text-default">
+						{dr_content_link($tags, $content, 1)}
+					</div>
+					<hr>
+					<!-- 结束 介绍内容 -->
+					{/if}
+					<!-- 开始 前后翻页 -->
+					<p>Previous Article：<a href="{if $prev_page}{$prev_page.url}{else}javascript:void(0);{/if}">{if
+							$prev_page}{$prev_page.title}{else}No More Content{/if}</a></p>
+					<p>Next Article：<a href="{if $next_page}{$next_page.url}{else}javascript:void(0);{/if}">{if
+							$next_page}{$next_page.title}{else}No More Content{/if}</a></p>
+					<!-- 结束 前后翻页 -->
+				</article>
+			</div>
+		</section>
+		<!-- 结束 内容区域 -->
+	</main>
+	<!-- 开始 通用底部 -->
+	{template "common/common_footer.html"}
+	<!-- 结束 通用底部 -->
+	{template "common/common_bottom.html"}
+</body>
+
+</html>

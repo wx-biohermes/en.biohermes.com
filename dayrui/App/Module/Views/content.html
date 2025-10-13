@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="{SITE_LANGUAGE}">
+<head>
+    <meta charset="utf-8" />
+    <title>{if $meta_title}{$meta_title}{else}{SITE_NAME} - {dr_lang('后台管理平台')}{/if}</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <script src="{$THEME_PATH}assets/global/plugins/jquery.min.js?v={CMF_UPDATE_TIME}" type="text/javascript"></script>
+    <link href="{$THEME_PATH}assets/icon/css/icon.css?v={CMF_UPDATE_TIME}" rel="stylesheet" type="text/css" />
+    <link href="{$THEME_PATH}assets/global/css/admin{if !IS_XRDEV}.min{/if}.css?v={CMF_UPDATE_TIME}" rel="stylesheet" type="text/css" />
+    {if $is_min}
+    <link href="{$THEME_PATH}assets/global/css/min{if !IS_XRDEV}.min{/if}.css?v={CMF_UPDATE_TIME}" rel="stylesheet" type="text/css" />
+    {/if}
+    {if $admin.setting.font_size}
+    <link href="{$THEME_PATH}assets/global/css/font-max.css?v={CMF_UPDATE_TIME}" rel="stylesheet" type="text/css" />
+    {/if}
+    <link href="{php echo defined('MYCSS_FILE') ? MYCSS_FILE : $THEME_PATH.'assets/global/css/my.css';}?v={CMF_UPDATE_TIME}" rel="stylesheet" type="text/css" />
+    <script type="text/javascript">
+        var admin_file = '{SELF}';
+        var is_cms_dev = '{php echo CI_DEBUG ? 1 : '';}';
+        var is_min = '{$is_min}';
+        var is_oemcms = '{IS_OEM_CMS}';
+        var is_mobile_cms = '{$is_mobile}';
+        var is_admin = '{if dr_in_array(1, $admin.roleid)}1{else}2{/if}';
+    </script>
+    <script src="{$LANG_PATH}lang.js?v={CMF_UPDATE_TIME}" type="text/javascript"></script>
+    <script src="{$THEME_PATH}assets/global/plugins/bootstrap/js/bootstrap.min.js?v={CMF_UPDATE_TIME}" type="text/javascript"></script>
+    <script src="{$THEME_PATH}assets/global/scripts/app{if !IS_XRDEV}.min{/if}.js?v={CMF_UPDATE_TIME}" type="text/javascript"></script>
+    <script src="{$THEME_PATH}assets/js/cms.js?v={CMF_UPDATE_TIME}" type="text/javascript"></script>
+    {if $is_index}
+    <script src="{$THEME_PATH}assets/global/plugins/jquery.md5.js?v={CMF_UPDATE_TIME}" type="text/javascript"></script>
+    {else}
+    <script src="{$THEME_PATH}assets/js/my.js?v={CMF_UPDATE_TIME}" type="text/javascript"></script>
+    {/if}
+
+    {if $is_mobile}
+    <style>
+        .page-sidebar {
+            width: 100% !important;
+            float: initial !important;
+            padding-bottom: 15px !important;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e7ecf1;
+        }
+        </style>
+    {/if}
+    <script type="text/javascript">
+
+
+        function dr_cat_url( url) {
+            $('#cat_page').attr("src", url);
+        }
+        function wSize(){
+            var str=getWindowSize();
+            var strs= new Array(); //定义一数组
+            strs=str.toString().split(","); //字符分割
+            var heights = strs[0],Body = $('body');
+            $('#cat_page').height(heights);
+        }
+        if(!Array.prototype.map)
+            Array.prototype.map = function(fn,scope) {
+                var result = [],ri = 0;
+                for (var i = 0,n = this.length; i < n; i++){
+                    if(i in this){
+                        result[ri++]  = fn.call(scope ,this[i],i,this);
+                    }
+                }
+                return result;
+            };
+
+        var getWindowSize = function(){
+            return ["Height","Width"].map(function(name){
+                return window["inner"+name] ||
+                    document.compatMode === "CSS1Compat" && document.documentElement[ "client" + name ] || document.body[ "client" + name ]
+            });
+        }
+
+        $(function(){
+            window.onresize=wSize;
+            wSize();
+
+        });
+
+
+    </script>
+</head>
+
+
+<body scroll="no" style="overflow: hidden;background-color: #fff !important;" class="page-sidebar-closed-hide-logo page-admin-all page-content-white   ">
+<style>.page-content {padding:0px !important;} </style>
+
+
+<div class="clearfix"> </div>
+
+<div class="page-container" style="margin: 0!important;">
+    <div class="page-sidebar-wrapper">
+
+        <div class="page-sidebar navbar-collapse collapse" style="width: 188px !important;">
+
+
+            <link href="{THEME_PATH}assets/global/plugins/jstree/dist/themes/default/style.min.css" rel="stylesheet" type="text/css" />
+            <script src="{THEME_PATH}assets/global/plugins/jstree/dist/jstree.min.js" type="text/javascript"></script>
+            <script type="text/javascript">
+                var UITree = function () {
+
+                    var handleSample1 = function () {
+
+                        $('#tree_1').jstree({
+                            "core" : {
+                                "themes" : {
+                                    "responsive": false
+                                }
+                            },
+                            "types" : {
+                                "default" : {
+                                    "icon" : "fa fa-folder icon-state-warning icon-lg"
+                                },
+                                "file" : {
+                                    "icon" : "fa fa-file icon-state-warning icon-lg"
+                                }
+                            },
+                            "plugins": ["types"]
+                        }){if $is_open}.on('ready.jstree',function(){
+                                $('#tree_1').jstree('open_all')
+                            }){/if};
+
+                        // handle link clicks in tree nodes(support target="_blank" as well)
+                        $('#tree_1').on('select_node.jstree', function(e,data) {
+                            var link = $('#' + data.selected).find('a');
+                            if (link.attr("href") != "#" && link.attr("href") != "javascript:;" && link.attr("href") != "") {
+                                if (link.attr("target") == "_blank") {
+                                    link.attr("href").target = "_blank";
+                                }
+                                document.location.href = link.attr("href");
+                                return false;
+                            }
+                        });
+                    }
+
+
+                    return {
+                        //main function to initiate the module
+                        init: function () {
+
+                            handleSample1();
+
+                        }
+
+                    };
+
+                }();
+
+                if (App.isAngularJsApp() === false) {
+                    jQuery(document).ready(function() {
+                        UITree.init();
+                    });
+                }
+            </script>
+            <div id="tree_1" class="tree-demo" style="background: #fff;overflow: hidden; padding-top:20px">
+                {$str}
+            </div>
+
+
+
+
+        </div>
+    </div>
+    <div class="page-content-wrapper">
+        <div class="page-content index-content" style="margin-left: 188px !important;">
+           <iframe class="myiframe active" name="cat_page" id="cat_page" src="{$url}" url="{$url}" style="border:none; margin-bottom:0px;" width="100%" height="auto" allowtransparency="true"></iframe>
+        </div>
+    </div>
+
+
+</div>
+<script>
+    // 关闭栏
+    function dr_hide_left_tab() {
+        $(".page-quick-sidebar-toggler").click();
+    }
+    var url = '{dr_url_prefix('/')}';
+    var p = url.split('/');
+    var ptl = document.location.protocol;
+    if ((p[0] == 'http:' || p[0] == 'https:') && ptl != p[0]) {
+        alert('当前访问是'+ptl.replace(':', '')+'模式，本项目设置的是'+p[0].replace(':', '')+'模式，请使用'+p[0].replace(':', '')+'模式访问，会导致部分功能无法正常使用');
+    }
+</script>
+</body>
+</html>
