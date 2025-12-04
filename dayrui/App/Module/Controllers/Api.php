@@ -14,14 +14,18 @@ class Api extends \Phpcmf\App
      */
     public function related() {
 
+        $user = (string)$_SERVER['HTTP_USER_AGENT'];
+        if (stripos($user, 'spider') !== false or strpos($user, 'bot') !== false) {
+            $this->goto_404_page('蜘蛛禁止抓取');
+        }
+
         // 强制将模板设置为后台
         \Phpcmf\Service::V()->admin();
 
         // 登陆判断
-        /*
-        if (!$this->uid) {
-            $this->_json(0, dr_lang('会话超时，请重新登录'));
-        }*/
+        //if (!$this->uid) {
+          //  $this->_json(0, dr_lang('会话超时，请重新登录'));
+        //}
 
         // 参数判断
         $dirname = dr_safe_filename(\Phpcmf\Service::L('input')->get('module'));

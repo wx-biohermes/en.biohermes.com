@@ -81,7 +81,8 @@ if ($module['category'] && is_array($module['category'])) {
         if ($t['tid'] == 2) {
             // 外链栏目
         } else {
-            $t['url'] = dr_url_rel(dr_url_prefix($t['url'], $module['mid'], $system['site'], $this->_is_mobile));
+            // 不需要格式化，因为dr_cat_value已经转换了
+            //$t['url'] = dr_url_rel(dr_url_prefix($t['url'], $module['mid'], $system['site'], $this->_is_mobile));
         }
         $return[] = $t;
     }

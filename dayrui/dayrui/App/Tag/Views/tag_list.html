@@ -1,0 +1,232 @@
+{template "header.html"}
+
+<div class="note note-danger">
+    <p>
+        <div class="btn-group" style="margin-top: 2px;">
+                <button class="btn btn-sm blue dropdown-toggle" type="button" data-hover="dropdown" data-toggle="dropdown" aria-expanded="false"> {dr_lang('一键提取词语')}
+                    <i class="fa fa-angle-down"></i>
+                </button>
+            <ul class="dropdown-menu" role="menu">
+                {cache name=module-content}
+                <li>
+                    <a {if $is_open_page}href="{dr_url('tag/home/url_add')}&mid={$t.dirname}" target="_blank"{else}href="javascript:dr_iframe_show('{dr_lang('一键提取词语')}', '{dr_url('tag/home/url_add')}&mid={$t.dirname}', '500px', '300px');"{/if}>{$t.name}</a>
+                </li>
+                {/cache}
+            </ul>
+        </div>
+
+        <label>
+            <a class="btn yellow btn-sm" {if $is_open_page}href="{dr_url('tag/home/url_edit')}" target="_blank"{else}href="javascript:dr_iframe_show('{dr_lang('一键更新词库地址')}', '{dr_url('tag/home/url_edit')}', '500px', '300px');"{/if}>{dr_lang('一键更新词库地址')}</a>
+        </label>
+        {if is_file(IS_USE_MODULE.'Models/Repair.php')}
+        <label>
+            <a class="btn green btn-sm" {if $is_open_page}href="{dr_url('tag/home/index_edit')}" target="_blank"{else}href="javascript:dr_iframe_show('{dr_lang('一键生成词库索引')}', '{dr_url('tag/home/index_edit')}', '500px', '300px');"{/if}>{dr_lang('一键生成词库索引')}</a>
+        </label>
+        <label>
+            <a class="btn red btn-sm" href="javascript:dr_ajax_url('{dr_url('tag/home/clear_edit')}');">{dr_lang('清空词库索引')}</a>
+        </label>
+        {/if}
+    </p>
+</div>
+<div class="right-card-box">
+{template "api_list_date_search.html"}
+<div class="row table-search-tool">
+    <form action="{SELF}" method="get">
+        {dr_form_search_hidden(['pid'=>$pid])}
+        <div class="col-md-12 col-sm-12">
+            <label>
+                <select name="field" class="form-control">
+                    {loop $field $t}
+                    {if $t.ismain}
+                    <option value="{$t.fieldname}" {if $param.field==$t.fieldname}selected{/if}>{$t.name}</option>
+                    {/if}
+                    {/loop}
+                </select>
+            </label>
+            <label><i class="fa fa-caret-right"></i></label>
+            <label><input type="text" class="form-control" placeholder="" value="{$param['keyword']}" name="keyword" /></label>
+        </div>
+
+        <div class="col-md-12 col-sm-12">
+            <button type="submit" class="btn blue btn-sm onloading" name="submit" > <i class="fa fa-search"></i> {dr_lang('搜索')}</button>
+        </div>
+
+        {if $pid}
+        <div class="col-md-12 col-sm-12" style="padding-top:2px">
+            <a class="btn red btn-sm" href="{dr_url('tag/home/add', ['pid'=>$pid])}"> <i class="fa fa-plus"></i> {dr_lang('添加子词')}</a>
+        </div>
+        <div class="col-md-12 col-sm-12" style="padding-top:2px">
+            <a class="btn blue btn-sm" href="{dr_url('tag/home/all_add', ['pid'=>$pid])}"> <i class="fa fa-plus"></i> {dr_lang('批量子词')}</a>
+        </div>
+        {/if}
+
+    </form>
+</div>
+
+
+<form class="form-horizontal" role="form" id="myform">
+    {dr_form_hidden()}
+    <div class="table-scrollable">
+        <table class="table table-striped table-bordered table-hover table-checkable dataTable">
+            <thead>
+            <tr class="heading">
+                {if $ci->_is_admin_auth('del')}
+                <th class="myselect">
+                    <label class="mt-table mt-checkbox mt-checkbox-single mt-checkbox-outline">
+                        <input type="checkbox" class="group-checkable" data-set=".checkboxes" />
+                        <span></span>
+                    </label>
+                </th>
+                {/if}
+                <th style="text-align:center" width="70" class="{dr_sorting('displayorder')}" name="displayorder">{dr_lang('权重')}</th>
+                <th width="220" class="{dr_sorting('name')}" name="name">{dr_lang('名称')}</th>
+                <th width="170" class="{dr_sorting('code')}" name="code">{dr_lang('别名')}</th>
+                <th>{dr_lang('操作')}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {loop $list $t}
+            <?php
+            $t['url'] = isset($t['myurl']) && $t['myurl'] ? $t['myurl'] : \Phpcmf\Service::L('router')->tag_url($t);
+            $rurl = dr_web_prefix('index.php?s=module&c=api&m=related&name=').'&site='.SITE_ID.'&&diy=&my=&pagesize=20&is_iframe=1';
+            ?>
+            <tr class="odd gradeX" id="dr_row_{$t.id}">
+                {if $ci->_is_admin_auth('del') || $ci->_is_admin_auth('edit')}
+                <td class="myselect">
+                    <label class="mt-table mt-checkbox mt-checkbox-single mt-checkbox-outline">
+                        <input type="checkbox" class="checkboxes" name="ids[]" value="{$t.id}" />
+                        <span></span>
+                    </label>
+                </td>
+                {/if}
+                <td style="text-align:center"> <input type="text" onblur="dr_ajax_save(this.value, '{dr_url('tag/home/order_edit', ['id'=>$t.id])}')" value="{$t.displayorder}" class="displayorder form-control input-sm input-inline input-mini"> </td>
+                <td>{Function_list::title($t.name, $param, $t)}</td>
+                <td>{$t.code}</td>
+
+                <td>
+                    {if !$pid && $is_child}
+                    <label><a href="{dr_url('tag/home/index', ['pid'=>$t.id])}" class="btn btn-xs dark"> <i class="fa fa-tag"></i> {dr_lang('子词管理')}</a></label>
+                    {/if}
+                    {if $ci->_is_admin_auth('edit')}
+                    <label><a href="{dr_url('tag/home/edit', ['id'=>$t.id])}" class="btn btn-xs green"> <i class="fa fa-edit"></i> {dr_lang('修改')}</a></label>
+                    {/if}
+                    {if $is_list_count}
+                    {cache name=module-content return=s}
+                    {/cache}
+                    {if dr_count($return_s) > 3}
+                    &nbsp;<div class="btn-group" style="margin-top: 2px;">
+                        <button class="btn btn-xs blue dropdown-toggle" type="button" data-hover="dropdown" data-toggle="dropdown" aria-expanded="false"> 数据统计
+                            <i class="fa fa-angle-down"></i>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            {loop $return_s $s}
+                            {php $tb='tag_'.$s['dirname'];}
+                            <li>
+                                <a href="javascript:dr_iframe_show('{$t.name} - {$s.name}', '{dr_url('tag/home/module_index', ['mid'=>$s.dirname, 'tid'=>$t.id])}');">{$s.name}（{count action=table table_site=$tb tid=$t.id}） </a>
+                            </li>
+                            {/loop}
+                        </ul>
+                    </div>
+                    <div class="btn-group" style="margin-top: 2px; margin-left: 90px">
+                        <button class="btn btn-xs green dropdown-toggle" type="button" data-hover="dropdown" data-toggle="dropdown" aria-expanded="false"> 关联内容
+                            <i class="fa fa-angle-down"></i>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            {loop $return_s $s}
+                            {php $tb='tag_'.$s['dirname'];}
+                            <li>
+                                <a href="javascript:dr_add_related('{$t.name} - {$s.name}', '{$rurl}&module={$s.dirname}', '{dr_url('tag/home/module_index', ['mid'=>$s.dirname, 'tid'=>$t.id])}');">{$s.name}</a>
+                            </li>
+                            {/loop}
+                        </ul>
+                    </div>
+                    {else}
+                    {loop $return_s $s}
+                    {php $tb='tag_'.$s['dirname'];}
+                    <label>
+                        <a class="btn btn-xs blue" href="javascript:dr_iframe_show('{$t.name} - {$s.name}', '{dr_url('tag/home/module_index', ['mid'=>$s.dirname, 'tid'=>$t.id])}');">{$s.name}（{count action=table table_site=$tb tid=$t.id}） </a>
+                    </label>
+                    {/loop}
+
+                    {loop $return_s $s}
+                    {php $tb='tag_'.$s['dirname'];}
+                    <label>
+                        <a class="btn btn-xs green" href="javascript:dr_add_related('{$t.name} - {$s.name}', '{$rurl}&module={$s.dirname}', '{dr_url('tag/home/module_index', ['mid'=>$s.dirname, 'tid'=>$t.id])}');">添加{$s.name}</a>
+                    </label>
+                    {/loop}
+                    {/if}
+                    {/if}
+                </td>
+            </tr>
+            {/loop}
+            </tbody>
+        </table>
+    </div>
+
+         <div class="row fc-list-footer table-checkable ">
+             <div class="col-md-5 fc-list-select">
+                {if $ci->_is_admin_auth('del') || $ci->_is_admin_auth('edit')}
+                <label class="mt-table mt-checkbox mt-checkbox-single mt-checkbox-outline">
+                    <input type="checkbox" class="group-checkable" data-set=".checkboxes" />
+                    <span></span>
+                </label>
+                <label><button type="button" onclick="dr_ajax_option('{dr_url($uriprefix.'/del')}', '{dr_lang('你确定要删除它们吗？')}', 1)" class="btn red btn-sm"> <i class="fa fa-trash"></i> {dr_lang('删除')}</button></label>
+                 <label><button type="button" onclick="dr_ajax_option('{dr_url($uriprefix.'/all_del')}', '{dr_lang('你确定要清空全部吗？')}', 1)" class="btn red btn-sm"> <i class="fa fa-trash"></i> {dr_lang('全部删除')}</button>
+                 </label>
+                 {/if}
+            </div>
+             <div class="col-md-7 fc-list-page">
+                 {$mypages}
+             </div>
+         </div>
+</form>
+</div>
+<script>
+
+    function dr_add_related(title, url, turl) {
+
+        layer.open({
+            type: 2,
+            title: '<i class="fa fa-cog"></i> '+title,
+            fix:true,
+            shadeClose: true,
+            shade: 0,
+            area: ["95%", "90%"],
+            btn: ["关联"],
+            success: function (json) {
+                if (json.code == 0) {
+                    layer.close();
+                    dr_tips(json.code, json.msg);
+                }
+            },
+            yes: function(index, layero){
+                var body = layer.getChildFrame('body', index);
+                // 延迟加载
+                var loading = layer.load(2, {
+                    time: 10000
+                });
+                $.ajax({type: "POST",dataType:"json", url: turl, data: $(body).find('#myform').serialize(),
+                    success: function(json) {
+                        layer.close(loading);
+                        if (json.code == 1) {
+                            layer.close(index);
+                            dr_tips(1, json.msg);
+                            setTimeout("window.location.reload(true)", 3000)
+                        } else {
+                            dr_tips(0, json.msg);
+
+                        }
+                        return false;
+                    }
+                });
+
+                return false;
+            },
+            content: url
+        });
+
+
+    }
+
+</script>
+{template "footer.html"}

@@ -105,16 +105,10 @@ if ($system['catid']) {
     // 副栏目判断
     if (isset($fields['catids']) && $fields['catids']['fieldtype'] = 'Catids') {
         foreach ($catids as $c) {
-            if (version_compare(\Phpcmf\Service::M()->db->getVersion(), '5.7.0') < 0) {
-                // 兼容写法
-                $fwhere[] = '`'.$table.'`.`catids` LIKE "%\"'.intval($c).'\"%"';
-            } else {
-                // 高版本写法
-                $fwhere[] = "(`{$table}`.`catids` <>'' AND JSON_CONTAINS (`{$table}`.`catids`->'$[*]', '\"".intval($c)."\"', '$'))";
-            }
+            $fwhere[] = \Phpcmf\Service::M()->where_json($table, 'catids', intval($c));
         }
     }
-    $fwhere && $where[] = [
+    $fwhere && $where['catid'] = [
         'adj' => 'SQL',
         'value' => urldecode(count($fwhere) == 1 ? $fwhere[0] : '('.implode(' OR ', $fwhere).')')
     ];
@@ -161,6 +155,14 @@ if (isset($param['groupid']) && $param['groupid']) {
 }
 
 $where = $this->_set_where_field_prefix($where, $tableinfo[$table], $table, $fields); // 给条件字段加上表前缀
+
+if (isset($where['catid']) && $where['catid'] && count($where) > 1) {
+    // 将catid条件放在最前面
+    $catwhere = $where['catid'];
+    unset($where['catid']);
+    array_unshift($where, $catwhere);
+}
+
 $system['field'] = $this->_set_select_field_prefix($system['field'], $tableinfo[$table], $table); // 给显示字段加上表前缀
 
 // 多表组合排序
@@ -278,12 +280,14 @@ if ($this->_return_sql) {
                 //  防止栏目生成第一页问题
                 if ($system['action'] == 'module') {
                     $first_url = dr_module_category_url($module, $cat);
-                    if (!$this->_is_pc || SITE_ID > 1) {
+                    if (!SYS_URL_REL) {
+                        // 绝对地址 !$this->_is_pc || SITE_ID > 1 ||
                         $first_url = dr_url_prefix($first_url, $module['dirname']);
                     }
                 }
                 $system['urlrule'] = dr_module_category_url($module, $cat, '{page}');
-                if (!$this->_is_pc || SITE_ID > 1) {
+                if (!SYS_URL_REL) {
+                    // 绝对地址 !$this->_is_pc || SITE_ID > 1 ||
                     $system['urlrule'] = dr_url_prefix($system['urlrule'], $module['dirname']);
                 }
             }

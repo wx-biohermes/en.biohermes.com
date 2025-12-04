@@ -154,11 +154,13 @@ return [
       `catid` mediumint(8) unsigned NOT NULL COMMENT '栏目id',
       `content` mediumtext NOT NULL COMMENT '具体内容',
       `result` text NOT NULL COMMENT '处理结果',
+      `error` tinyint(1) unsigned NOT NULL COMMENT '是否错误',
       `posttime` int(10) unsigned NOT NULL COMMENT '定时发布时间',
       `inputtime` int(10) unsigned NOT NULL COMMENT '录入时间',
       PRIMARY KEY (`id`),
       KEY `uid` (`uid`),
       KEY `catid` (`catid`),
+      KEY `error` (`error`),
       KEY `posttime` (`posttime`),
       KEY `inputtime` (`inputtime`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='内容定时发布表';

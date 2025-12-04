@@ -1,7 +1,7 @@
 <?php namespace Phpcmf;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -255,6 +255,10 @@ class Hooks {
             return false;
         }
 
+        $msg = '';
+        $data = [];
+        $is_rt = 0;
+
         foreach ($listeners as $k => $listener) {
 
             if (IS_POST && CI_DEBUG && !in_array($eventName, ['DBQuery', 'pre_system'])) {
@@ -274,9 +278,29 @@ class Hooks {
             }
 
             if ($rt && isset($rt['code'])) {
-                // 只要遇到返回成功的钩子就中断执行直接返回
-                return $rt;
+                if ($rt['code'] == 0) {
+                    // 只要遇到返回成功的钩子就中断执行直接返回
+                    return $rt;
+                }
+                $msg = $rt['msg'];
+                if (is_array($rt['data'])) {
+                    if (is_array($data)) {
+                        $data = dr_array22array($data, $rt['data']);
+                    } else {
+                        $data = $rt['data'];
+                    }
+                } else {
+                    $data = $rt['data'];
+                }
+                if ($msg == 'merge') {
+                    $arguments[0] = dr_array22array($arguments[0], $data);
+                }
+                $is_rt = 1;
             }
+        }
+
+        if ($is_rt) {
+            return dr_return_data(1, $msg, $data);
         }
 
         return false;

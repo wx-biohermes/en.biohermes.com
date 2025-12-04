@@ -26,7 +26,7 @@ class Api extends \Phpcmf\Common
         $prefix = dr_module_table_prefix($dir);
         if (is_dir(dr_get_app_dir($dir))) {
             $this->_module_init($dir);
-            $t1 = \Phpcmf\Service::M()->table($prefix)->where($this->content_model->get_admin_list_where($prefix))->where('DATEDIFF(from_unixtime(inputtime),now())=0')->counts();
+            $t1 = \Phpcmf\Service::M()->table($prefix)->where($this->content_model->get_admin_list_where($prefix))->where_date('inputtime', 0)->counts();
             $t2 = \Phpcmf\Service::M()->table($prefix)->where($this->content_model->get_admin_list_where($prefix))->counts();
             $t3 = \Phpcmf\Service::M()->table($prefix.'_verify')->where($this->content_model->get_admin_list_verify_where($this->content_model->get_admin_list_where($prefix.'_verify')))->counts();
             $t4 = \Phpcmf\Service::M()->table($prefix.'_recycle')->where($this->content_model->get_admin_list_where($prefix.'_recycle'))->counts();
@@ -59,7 +59,9 @@ class Api extends \Phpcmf\Common
         $ctid = (int)\Phpcmf\Service::L('input')->get('ctid');
         if ($this->module['is_ctable']) {
             // 存在栏目分表
-            $cats = \Phpcmf\Service::M()->table($this->module['share'] ? SITE_ID.'_share_category' : SITE_ID.'_'.$mid.'_category')->where('is_ctable=1 and pid=0')->getAll();
+            $cats = \Phpcmf\Service::M()->table($this->module['share'] ? SITE_ID.'_share_category' : SITE_ID.'_'.$mid.'_category')
+                ->where('is_ctable=1 and pid=0')
+                ->getAll();
             if ($cats && $this->module['share']) {
                 foreach ($cats as $i => $t) {
                     if ($t['mid'] != $mid) {

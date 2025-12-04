@@ -12,7 +12,7 @@ class Category extends \Phpcmf\Home\Module {
         }
 
 		$id = (int)\Phpcmf\Service::L('input')->get('id');
-		$dir = dr_safe_replace(\Phpcmf\Service::L('input')->get('dir'));
+        $dir = trim(dr_safe_replace(\Phpcmf\Service::L('input')->get('dir')), '/');
 		$page = max(1, (int)\Phpcmf\Service::L('input')->get('page'));
 
 		$module = \Phpcmf\Service::L('cache')->get('module-'.SITE_ID.'-share');

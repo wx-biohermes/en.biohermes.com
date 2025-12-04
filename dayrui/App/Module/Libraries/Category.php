@@ -71,9 +71,9 @@ class Category {
                 }
             } else {
                 if ($this->ismain) {
-                    $category = \Phpcmf\Service::L('category', 'module')->get_category_main($mid);
+                    $category = \Phpcmf\Service::L('category', 'module')->get_category_main($mid, $siteid);
                 } else {
-                    $category = \Phpcmf\Service::L('category', 'module')->get_category($mid);
+                    $category = \Phpcmf\Service::L('category', 'module')->get_category($mid, $siteid);
                 }
                 if ($is_first) {
                     list($html, $catid) = \Phpcmf\Service::L('Tree')->select_category(
@@ -144,6 +144,11 @@ class Category {
             'cache',
             'module/category-'.$siteid.'-'.$mid.'-data'
         );
+    }
+
+    // 获取栏目自定义字段
+    public function get_category_field($mid) {
+        return \Phpcmf\Service::M('repair', 'module')->get_category_field($mid, false);
     }
 
     // 获取下级子栏目

@@ -1,7 +1,7 @@
 <?php namespace Phpcmf;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -19,9 +19,16 @@ class Service {
 	];
     static private $mwhere_apps = [];
     static private $filters = [
-        'home' => ['install/index'],
-        'member' => [],
-        'admin' => [],
+        'home' => [
+            'install/index',
+            'api/ueditor',
+        ],
+        'member' => [
+            'api/ueditor',
+        ],
+        'admin' => [
+            'api/ueditor',
+        ],
     ];
 
     // 获取应用自动加载
@@ -203,8 +210,10 @@ class Service {
         }
 
         if (is_object($message)) {
-            $msg = $message->getMessage();
+
+            $msg = substr((string)$message->getMessage(), 0, 1048576);
             $code = md5($msg);
+            
             if (is_array( static::$logs) && in_array($code, static::$logs)) {
                 return;
             }

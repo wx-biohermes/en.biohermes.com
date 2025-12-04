@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Library;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -157,7 +157,7 @@ class Function_list {
     public function uid($uid, $param = [], $data = [], $field = []) {
 
         // 查询username
-        if (strlen($uid) > 12) {
+        if (!$uid || strlen($uid) > 12) {
             return dr_lang('游客');
         }
 

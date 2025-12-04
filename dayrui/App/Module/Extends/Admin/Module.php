@@ -50,6 +50,35 @@ class Module extends \Phpcmf\Table {
             'search_first_field' => $this->module['setting']['search_first_field'] ? $this->module['setting']['search_first_field'] : 'title',
         ]);
         $this->content_model->init($this->init); // 初始化内容模型
+
+        $is_right_field = 1;
+        if (isset($this->module['setting']['right_field']) && $this->module['setting']['right_field']) {
+            if ($this->module['setting']['right_field'] == 2) {
+                $is_right_field = 0;
+            } elseif (!dr_in_array(1, $this->admin['roleid'])) {
+                $is_right_field = 0;
+            }
+        }
+        $catid = intval($_GET['catid']);
+        $this->_get_falg($catid); // 初始化可用的推荐位
+        // 写入模板
+        \Phpcmf\Service::V()->assign([
+            'field' => $this->init['field'],
+            'module' => $this->module,
+            'post_url' => \Phpcmf\Service::L('Router')->url(APP_DIR.'/home/add', ['catid' => $catid]),
+            'is_post_user' => $this->is_post_user,
+            'is_hcategory' => $this->is_hcategory,
+            'is_right_field' => $is_right_field,
+            'is_category_show' => $this->is_hcategory ? 0 : 1,
+        ]);
+
+        if ($this->module['setting']['is_hide_search_bar']) {
+            $this->is_show_search_bar = 0;
+        }
+    }
+
+    // 初始化可用的推荐位
+    private function _get_falg($catid = 0) {
         // 子管理员推荐位权限
         if (!dr_in_array(1, $this->admin['roleid']) && $this->module['setting']['flag']) {
             foreach ($this->module['setting']['flag'] as $i => $t) {
@@ -63,28 +92,19 @@ class Module extends \Phpcmf\Table {
                 }
             }
         }
-        $is_right_field = 1;
-        if (isset($this->module['setting']['right_field']) && $this->module['setting']['right_field']) {
-            if ($this->module['setting']['right_field'] == 2) {
-                $is_right_field = 0;
-            } elseif (!dr_in_array(1, $this->admin['roleid'])) {
-                $is_right_field = 0;
+        // 栏目可用检测
+        if ($catid) {
+            foreach ($this->module['setting']['flag'] as $i => $t) {
+                if (!$t['cat']) {
+                    continue;
+                } elseif (dr_in_array($catid, $t['cat'])) {
+                    continue;
+                } else {
+                    unset($this->module['setting']['flag'][$i]);
+                }
             }
         }
-        // 写入模板
-        \Phpcmf\Service::V()->assign([
-            'field' => $this->init['field'],
-            'module' => $this->module,
-            'post_url' => \Phpcmf\Service::L('Router')->url(APP_DIR.'/home/add', ['catid' => intval($_GET['catid'])]),
-            'is_post_user' => $this->is_post_user,
-            'is_hcategory' => $this->is_hcategory,
-            'is_right_field' => $is_right_field,
-            'is_category_show' => $this->is_hcategory ? 0 : 1,
-        ]);
-
-        if ($this->module['setting']['is_hide_search_bar']) {
-            $this->is_show_search_bar = 0;
-        }
+        return $this->module['setting']['flag'];
     }
 
     // ========================
@@ -101,7 +121,9 @@ class Module extends \Phpcmf\Table {
             $this->_json(0, dr_lang('没有选择任何栏目'));
         }
 
-        $this->_json(1, dr_url('chtml/html/show_index', ['app' => APP_DIR, 'ids' => implode(',', $ids)]));
+        $catid = \Phpcmf\Service::L('input')->get('catid');
+
+        $this->_json(1, dr_url('chtml/html/show_index', ['app' => APP_DIR, 'catids' => dr_array2string([$catid]), 'ids' => implode(',', $ids)]));
     }
 
 
@@ -115,7 +137,7 @@ class Module extends \Phpcmf\Table {
                 foreach ($this->module['form'] as $a) {
                     if ($this->_is_admin_auth(APP_DIR.'/'.$a['table'].'/index')) {
                         $rt.= '<label><a class="btn blue btn-xs" href="'.dr_url(APP_DIR.'/'.$a['table'].'/index').'&cid='.$data['id'].'"><i class="'.dr_icon($a['setting']['icon']).'"></i> '.dr_lang($a['name']);
-                        if (isset($data[$a['table'].'_total'])) {
+                        if (dr_in_array(1, $this->admin['roleid']) && isset($data[$a['table'].'_total'])) {
                             $rt.= '（'.$data[$a['table'].'_total'].'）';
                         }
                         $rt.= '</a></label>';
@@ -223,7 +245,7 @@ class Module extends \Phpcmf\Table {
                 'icon' => 'fa fa-flag',
                 'name' => dr_lang('推送到推荐位'),
                 'uri' => APP_DIR.'/home/edit',
-                'url' => 'javascript:;" onclick="dr_module_send(\''.dr_lang("推荐位").'\', \''.dr_url(APP_DIR.'/home/tui_edit').'&page=0\')',
+                'url' => 'javascript:;" onclick="dr_module_send(\''.dr_lang("推荐位").'\', \''.dr_url(APP_DIR.'/home/tui_edit').'&catid='.intval($_GET['catid']).'&page=0\')',
             ];
             $data[] = [
                 'icon' => 'fa fa-clock-o',
@@ -322,6 +344,7 @@ class Module extends \Phpcmf\Table {
 
         $this->is_get_catid = $catid;
         $draft && $draft['catid'] = $catid;
+        $catid && $this->_get_falg($catid); // 初始化可用的推荐位
 
         list($tpl) = $this->_Post($id, $draft);
 
@@ -399,7 +422,7 @@ class Module extends \Phpcmf\Table {
                 }
             }
         }
-
+        $this->_get_falg($data['catid']); // 初始化可用的推荐位
         \Phpcmf\Service::V()->assign([
             'did' => $did,
             'form' => dr_form_hidden(['is_draft' => 0, 'module' => MOD_DIR, 'id' => $id]),
@@ -546,12 +569,14 @@ class Module extends \Phpcmf\Table {
     // 批量推送
     protected function _Admin_Send() {
 
+        $ids = \Phpcmf\Service::L('input')->get('ids');
         $page = (int)\Phpcmf\Service::L('input')->get('page');
-        if ($page != 5) {
-            $ids = \Phpcmf\Service::L('input')->get('ids');
-            if (!$ids) {
-                $this->_json(0, dr_lang('所选数据不存在'));
-            }
+        if ($page != 5 && !$ids) {
+            $this->_json(0, dr_lang('所选数据不存在'));
+        }
+
+        if (isset($_GET['catid']) && $_GET['catid']) {
+            $this->_get_falg(intval($_GET['catid'])); // 初始化可用的推荐位
         }
 
         if (IS_AJAX_POST) {
@@ -629,8 +654,10 @@ class Module extends \Phpcmf\Table {
                     $c = 0;
                     foreach ($data as $t) {
                         foreach ($flag as $fid) {
-                            $this->content_model->insert_flag((int)$fid, (int)$t['id'], (int)$t['uid'], (int)$t['catid']);
-                            $c ++;
+                            if ($this->content_model->insert_flag((int)$fid, (int)$t['id'], (int)$t['uid'], (int)$t['catid'])) {
+                                $c ++;
+                            }
+
                         }
                     }
 
@@ -733,6 +760,7 @@ class Module extends \Phpcmf\Table {
             'ids' => $ids,
             'page' => $page,
             'form' => dr_form_hidden(),
+            'module' => $this->module,
             'select' => \Phpcmf\Service::L('category', 'module')->select(
                 $this->module['dirname'],
                 0,
@@ -1668,6 +1696,7 @@ class Module extends \Phpcmf\Table {
                             $data[1]['catid'] = $old['catid'];
                         }
                     }
+                    $this->_get_falg($data[1]['catid']); // 初始化可用的推荐位
                     // 发布之前判断
                     if ($old && defined('IS_MODULE_VERIFY')) {
                         // 是否来自审核

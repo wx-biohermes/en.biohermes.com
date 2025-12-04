@@ -1,13 +1,104 @@
 <?php namespace Phpcmf\Model;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
 
 // 数据表
 class Table extends \Phpcmf\Model {
+
+    // 字段修改
+    public function edit_field($table, $name, $type, $info, $note) {
+
+        if (method_exists($this->db, 'editField')) {
+            return $this->db->editField($table, $name, $type, $info, $note);
+        }
+
+        $sql = 'ALTER TABLE `' . $table . '` CHANGE `'.$name.'` `'.$name.'` '.$type.' '.$info.' COMMENT \''.$note.'\';';
+
+        return $this->db->query($sql);
+    }
+
+    // 添加字段
+    public function add_field($table, $name, $type, $info, $note) {
+
+        if (method_exists($this->db, 'addField')) {
+            return $this->db->addField($table, $name, $type, $info, $note);
+        }
+
+        $sql = 'ALTER TABLE `' . $table . '` ADD `'.$name.'` '.$type.' '.$info.' COMMENT \''.$note.'\';';
+
+        return $this->db->query($sql);
+    }
+
+    // 根据配置创建字段
+    public function create_field($table, $config) {
+
+        if (!$config || !$table) {
+            return;
+        }
+
+        foreach ($config as $field) {
+
+            if (\Phpcmf\Service::M()->db->fieldExists($field['fieldname'], $table)) {
+                continue;
+            }
+
+            $obj = \Phpcmf\Service::L('field')->get($field['fieldtype']);
+            if (!$obj) {
+                continue;
+            }
+
+            $sql = $obj->create_sql($field['fieldname'], $field['setting']['option'], dr_safe_filename($field['name']));
+            \Phpcmf\Service::M()->query(str_replace('{tablename}', \Phpcmf\Service::M()->dbprefix($table), $sql));
+        }
+
+    }
+
+
+    // 创建表
+    public function create_table($table, $fields, $indexs, $note) {
+
+        if (method_exists($this->db, 'createTable')) {
+            return $this->db->createTable($table, $fields, $indexs, $note);
+        }
+    }
+
+    // 创建表的sql
+    public function create_table_sql($table) {
+
+        if (method_exists($this->db, 'createTableSql')) {
+            $sql = $this->db->createTableSql($table);
+        } else {
+            $row = $this->db->query("SHOW CREATE TABLE `".$table."`")->getRowArray();
+            $sql = $row['Create Table'];
+        }
+
+        $arr = explode(PHP_EOL, $sql);
+        $sql = [];
+        foreach ($arr as $t) {
+            if (preg_match('/`(.+)`/U', $t, $mt)
+                && strpos($t, ' KEY ') === false
+                && strpos($t, '`'.$this->dbprefix()) === false
+            ) {
+                $sql[$mt[1]] = trim($t, ',');
+            }
+        }
+
+        return array($row['Create Table'], $sql, $row['Table']);
+    }
+
+    public function show_full_colunms($table) {
+
+        if (method_exists($this->db, 'showFullColunms')) {
+            return $this->db->showFullColunms($table);
+        } else {
+            return \Phpcmf\Service::M()->db->query('SHOW FULL COLUMNS FROM `'.$table.'`')->getResultArray();
+        }
+    }
+
 
     // 表结构缓存
     public function cache($siteid = SITE_ID, $module = null) {
@@ -76,7 +167,7 @@ class Table extends \Phpcmf\Model {
 
         return isset($tableinfo[$this->dbprefix($table)]) ? $tableinfo[$this->dbprefix($table)] : [];
     }
-    
+
     // 执行批量sql
     public function _query($sql, $replace = []) {
 
@@ -109,7 +200,7 @@ class Table extends \Phpcmf\Model {
                 }
             }
         }
-        
+
         return dr_return_data(1, '', [$count, $todo]);
     }
 
@@ -137,7 +228,7 @@ class Table extends \Phpcmf\Model {
             \Phpcmf\Service::M('mform', 'mform')->create_module_form($data);
         }
     }
-    
+
     // 删除模块表单
     public function delete_module_form($data) {
         if (dr_is_app('mform')) {
@@ -153,5 +244,5 @@ class Table extends \Phpcmf\Model {
 
 
     }
-    
+
 }

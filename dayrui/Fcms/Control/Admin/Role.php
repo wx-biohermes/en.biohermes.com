@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Control\Admin;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -174,7 +174,7 @@ class Role extends \Phpcmf\Common {
 			'data' => $data,
 			'page' => $page,
 			'form' => dr_form_hidden(['page' => $page]),
-			'menu_data' => \Phpcmf\Service::M('Menu')->gets('admin', 'mark<>"cloud"'),
+			'menu_data' => \Phpcmf\Service::M('Menu')->gets('admin', 'mark<>\'cloud\''),
 			'module_auth' => $module_auth,
 		]);
 		\Phpcmf\Service::V()->display('role_auth.html');

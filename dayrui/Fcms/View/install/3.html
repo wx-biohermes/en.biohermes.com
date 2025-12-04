@@ -4,7 +4,7 @@
     <div class="portlet-title">
         <div class="caption">
             <i class="fa fa-laptop font-green"></i>
-            <span class="caption-subject font-green">正在安装数据结构</span>
+            <span class="caption-subject font-green">{dr_lang('正在安装数据结构')}</span>
         </div>
     </div>
     <div class="portlet-body " style="">
@@ -15,18 +15,10 @@
         </div>
         {else}
         <div class="scroller" style="height:300px; font-size: 12px;" data-rail-visible="1" id="dr_check_html">
-            <p>正在执行安装程序</p>
+            <p>{dr_lang('正在执行安装程序')}</p>
         </div>
         <div id="dr_error_html" style="display: none">
-            <!--s-->
-            <h5 class="caption-subject font-green">常见问题：</h5>
-            <p><a href="javascript:dr_tips(0, '表示你已经安装过，需要返回上一步，改一下数据表前缀字符，例如改成：xr_等等', -1);">Tablespace ** exists</a></p>
-            <p><a href="javascript:dr_tips(0, '表示你已经安装过，需要返回上一步，改一下数据表前缀字符，例如改成：xr_等等', -1);">Table ** already exists</a></p>
-            <p><a href="https://www.xunruicms.com/doc/1238.html" target="_blank">Index column size too large</a></p>
-            <p><a href="https://www.xunruicms.com/doc/1047.html" target="_blank">Unknown storage engine InnoDB</a></p>
-            <p><a href="https://www.xunruicms.com/doc/1309.html" target="_blank">Got error ** from storage engine</a></p>
-            <p><a href="javascript:dr_tips(0, 'Mysql版本太低了，需要在5.7以上或者更高的版本', -1);">SQLSTATE[42000]: Syntax error or access violation: 1071 Specified key was too long</a></p>
-            <!--e-->
+            
         </div>
         <script>
             $(function(){
@@ -74,7 +66,7 @@
     </div>
     <div class="portlet-body text-center">
         {if $error}
-        <a href="{$pre_url}" class="btn btn-success"> 返回上一步 </a>
+        <a href="{$pre_url}" class="btn btn-success"> {dr_lang('返回上一步')} </a>
         {/if}
     </div>
 </div>

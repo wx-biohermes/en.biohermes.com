@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Model;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -375,7 +375,13 @@ class Member extends \Phpcmf\Model {
 
         if (is_file(WRITEPATH.'config/domain_sso.php')) {
             $sso = require WRITEPATH.'config/domain_sso.php';
+            $rts = [];
             foreach ($sso as $u) {
+                list($a) = explode(',', $u);
+                if (in_array($a, $rts)) {
+                    continue;
+                }
+                $rts[] = $a;
                 $this->sso_url[] = $u ? dr_http_prefix($u).'/' : '/';
             }
         }
@@ -585,10 +591,18 @@ class Member extends \Phpcmf\Model {
                     return $rt;
                 }
             }
-            if ($member['email'] && dr_in_array('email', \Phpcmf\Service::C()->member_cache['register']['field'])
+            $is_email_y = 1;
+            $is_phone_y = 1;
+            if (isset(\Phpcmf\Service::C()->member_cache['register']['field_y'])
+                && is_array(\Phpcmf\Service::C()->member_cache['register']['field_y'])) {
+                $is_email_y = in_array('email', \Phpcmf\Service::C()->member_cache['register']['field_y']);
+                $is_phone_y = in_array('phone', \Phpcmf\Service::C()->member_cache['register']['field_y']);
+            }
+            if ($is_email_y && $member['email'] && dr_in_array('email', \Phpcmf\Service::C()->member_cache['register']['field'])
                 && !\Phpcmf\Service::L('Form')->check_email($member['email'])) {
                 return dr_return_data(0, dr_lang('邮箱格式不正确'), ['field' => 'email']);
-            } elseif ($member['phone'] && dr_in_array('phone', \Phpcmf\Service::C()->member_cache['register']['field'])
+            }
+            if ($is_phone_y && $member['phone'] && dr_in_array('phone', \Phpcmf\Service::C()->member_cache['register']['field'])
                 && !\Phpcmf\Service::L('Form')->check_phone($member['phone'])) {
                 return dr_return_data(0, dr_lang('手机号码格式不正确'), ['field' => 'phone']);
             }
@@ -816,36 +830,22 @@ class Member extends \Phpcmf\Model {
         }
 
         $config = \Phpcmf\Service::R($file);
-        if ($config['third']) {
-            if (is_file(CONFIGPATH.'mysms.php')) {
-                require_once CONFIGPATH.'mysms.php';
-            }
-            $method = 'my_sendsms_'.$type;
-            if (function_exists($method)) {
-                return call_user_func_array($method, [
-                    $mobile,
-                    $content,
-                    $config['third'],
-                ]);
-            } else {
-                $error = dr_lang('你没有定义第三方短信接口: '. $method);
-                @file_put_contents(WRITEPATH.'sms_log.txt', date('Y-m-d H:i:s').' ['.$mobile.'] ['.$error.'] （'.str_replace(array(chr(13), chr(10)), '', $content).'）'.PHP_EOL, FILE_APPEND);
-                return dr_return_data(0, $error);
-            }
-        } else {
-            $content = $type == 'code' ? dr_lang('您的本次验证码是: %s', $content) : $content;
-            $url = 'https://www.xunruicms.com/index.php?s=vip&c=home&uid='.$config['uid'].'&key='.$config['key'].'&mobile='.$mobile.'&content='.urlencode($content).'【'.$config['note'].'】&domain='.trim(str_replace('http://', '', SITE_URL), '/').'&sitename='.SITE_NAME;
-            $result = dr_catcher_data($url);
-            if (!$result) {
-                log_message('error', '访问官方云短信服务器失败');
-                return dr_return_data(0, dr_lang('访问官方云短信服务器失败'));
-            }
-            $result = json_decode($result, true);
+        if (is_file(CONFIGPATH.'mysms.php')) {
+            require_once CONFIGPATH.'mysms.php';
         }
 
-        @file_put_contents(WRITEPATH.'sms_log.txt', date('Y-m-d H:i:s').' ['.$mobile.'] ['.$result['msg'].'] （'.str_replace(array(chr(13), chr(10)), '', $content).'）'.PHP_EOL, FILE_APPEND);
-
-        return $result;
+        $method = 'my_sendsms_'.$type;
+        if (function_exists($method)) {
+            return call_user_func_array($method, [
+                $mobile,
+                $content,
+                isset($config['third']) ? $config['third'] : '',
+            ]);
+        } else {
+            $error = dr_lang('你没有定义短信接口');
+            @file_put_contents(WRITEPATH.'sms_log.txt', date('Y-m-d H:i:s').' ['.$mobile.'] ['.$error.'] （'.str_replace(array(chr(13), chr(10)), '', $content).'）'.PHP_EOL, FILE_APPEND);
+            return dr_return_data(0, $error);
+        }
     }
 
     /**

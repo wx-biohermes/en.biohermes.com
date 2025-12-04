@@ -338,12 +338,16 @@ class Content extends \Phpcmf\Model {
 
         // 主表数据
         $main = isset($data[1]) ? $data[1] : $data;
+        $mtable = dr_module_ctable($this->mytable, dr_cat_value($data[1]['catid']));
         if ($id) {
             // 更新数据
-            //$main['hits'] = 0;
-            $rt = $this->table(dr_module_ctable($this->mytable, dr_cat_value($data[1]['catid'])))->update($id, $main);
+            //$main['hits'] = 0;\
+            $rt = $this->table($mtable)->update($id, $main);
             if (!$rt['code']) {
                 return $rt;
+            }
+            if (defined('MODULE_CTABLE_CP_MAIN') && $this->mytable != $mtable) {
+                $this->table($this->mytable)->update($id, $main);
             }
             $tid = intval($old['tableid']);
         } else {
@@ -351,15 +355,18 @@ class Content extends \Phpcmf\Model {
             $main['hits'] = (int)$main['hits'];
             $main['tableid'] = 0;
             $main['displayorder'] = (int)$main['displayorder'];
-            $rt = $this->table(dr_module_ctable($this->mytable, dr_cat_value($data[1]['catid'])))->replace($main);
+            $rt = $this->table($mtable)->replace($main);
             if (!$rt['code']) {
                 // 删除索引
                 $this->table($this->mytable.'_index')->delete($data[1]['id']);
                 return $rt;
             }
+            if (defined('MODULE_CTABLE_CP_MAIN') && $this->mytable != $mtable) {
+                $this->table($this->mytable)->replace($main);
+            }
             // 副表数据量无限分表
             $tid = $this->_table_id($data[1]['id']);
-            $this->table(dr_module_ctable($this->mytable, dr_cat_value($data[1]['catid'])))->update($data[1]['id'], ['tableid' => $tid]);
+            $this->table($mtable)->update($data[1]['id'], ['tableid' => $tid]);
         }
 
         // 判断附表是否存在,不存在则创建
@@ -510,7 +517,10 @@ class Content extends \Phpcmf\Model {
 
         if ($save[1]['title'] && $this->db->table($this->mytable)->where('title', $save[1]['title'])->countAllResults()) {
             $msg = dr_lang('已经有相同的%s存在', isset(\Phpcmf\Service::C()->module['field']['title']['name']) ? \Phpcmf\Service::C()->module['field']['title']['name'] : dr_lang('主题'));
-            $this->db->table($this->mytable.'_time')->where('id', $row['id'])->update(['result' => $msg]);
+            $this->db->table($this->mytable.'_time')->where('id', $row['id'])->update([
+                'error' => 1,
+                'result' => $msg,
+            ]);
             return dr_return_data(0, $msg);
         }
 
@@ -549,7 +559,10 @@ class Content extends \Phpcmf\Model {
                 dr_catcher_data(SITE_URL.'index.php?s='.MOD_DIR.'&c=html&m=categoryfile&id='.$data['catid'].'&atcode='.$atcode);
             }
         } else {
-            $this->db->table($this->mytable.'_time')->where('id', $row['id'])->update(['result' => $rt['msg']]);
+            $this->db->table($this->mytable.'_time')->where('id', $row['id'])->update([
+                'error' => 1,
+                'result' => $rt['msg']
+            ]);
         }
 
         return $rt;
@@ -646,6 +659,14 @@ class Content extends \Phpcmf\Model {
     // 新增推荐位
     public function insert_flag($flag, $id, $uid, $catid) {
 
+        if ($catid && isset(\Phpcmf\Service::C()->module['setting']['flag'][$flag])
+            && \Phpcmf\Service::C()->module['setting']['flag'][$flag]
+            && \Phpcmf\Service::C()->module['setting']['flag'][$flag]['cat']
+            && !dr_in_array($catid, \Phpcmf\Service::C()->module['setting']['flag'][$flag]['cat']) ) {
+            return;
+        }
+
+
         if ($this->table($this->mytable.'_flag')
             ->where('id', $id)
             ->where('uid', $uid)
@@ -654,7 +675,7 @@ class Content extends \Phpcmf\Model {
             return;
         }
 
-        $this->db->table($this->mytable.'_flag')->replace([
+        return $this->db->table($this->mytable.'_flag')->replace([
             'id' => $id,
             'uid' => $uid,
             'flag' => $flag,
@@ -724,6 +745,7 @@ class Content extends \Phpcmf\Model {
             'uid' => intval($data[1]['uid']),
             'catid' => intval($data[1]['catid']),
             'content' => dr_array2string($post),
+            'error' => 0,
             'result' => '',
             'posttime' => $time,
             'inputtime' => SYS_TIME
@@ -818,7 +840,14 @@ class Content extends \Phpcmf\Model {
 
     // 更新url
     public function update_url($row, $url) {
-        $this->table(dr_module_ctable($this->mytable, dr_cat_value($row['catid'])))->update((int)$row['id'], ['url' => $url]);
+        if (!$url) {
+            $url = \Phpcmf\Service::L('router')->url_prefix('module_php', \Phpcmf\Service::C()->module, []) . 'c=show&id=' .$row['id'];
+        }
+        $table = dr_module_ctable($this->mytable, dr_cat_value($row['catid']));
+        $this->table($table)->update((int)$row['id'], ['url' => $url]);
+        if (defined('MODULE_CTABLE_CP_MAIN') && $table != $this->mytable) {
+            $this->table($this->mytable)->update((int)$row['id'], ['url' => $url]);
+        }
         return $url;
     }
 
@@ -946,18 +975,34 @@ class Content extends \Phpcmf\Model {
             }
             $id = $row['id'];
         } else {
-			$row = $this->table($table)->get($id);
-            if (!$row) {
-                // 主表不存在尝试判断分表
+            if (defined('MODULE_CTABLE_CP_MAIN')) {
+                // 复制表模式优先判断分表
                 $index = $this->table($table.'_index')->get($id);
                 if (!$index) {
                     return [];
                 }
                 $row = $this->table(dr_module_ctable($table, dr_cat_value($index['catid'])))->get($id);
                 if (!$row) {
-                    return [];
+                    $row = $this->table($table)->get($id);
+                    if (!$row) {
+                        return [];
+                    }
+                }
+            } else {
+                $row = $this->table($table)->get($id);
+                if (!$row) {
+                    // 主表不存在尝试判断分表
+                    $index = $this->table($table.'_index')->get($id);
+                    if (!$index) {
+                        return [];
+                    }
+                    $row = $this->table(dr_module_ctable($table, dr_cat_value($index['catid'])))->get($id);
+                    if (!$row) {
+                        return [];
+                    }
                 }
             }
+
 		}
 
         $cdata[$table] = $row;
@@ -1089,21 +1134,27 @@ class Content extends \Phpcmf\Model {
 
             \Phpcmf\Service::L('cache')->clear('module_'.$this->dirname.'_show_id_'.$id);
 
+            $index = $this->table($this->mytable.'_index')->get($id);
+            if (!$index) {
+                log_message('error', dr_lang('删除内容（%s）不存在', $id));
+                continue;
+            }
+            $mtable = dr_module_ctable($this->mytable, dr_cat_value($index['catid']));
             // 主表
             $tables[$this->mytable] = $row = $this->table($this->mytable)->get($id);
             if (!$row) {
                 if (XR_C()->module['is_ctable']) {
                     // 主表不存在尝试判断分表
-                    $index = $this->table($this->mytable.'_index')->get($id);
-                    if ($index) {
-                        $table = dr_module_ctable($this->mytable, dr_cat_value($index['catid']));
-                        $tables[$this->mytable] = $tables[$table] = $row = $this->table($table)->get($id);
-                    }
+                    $tables[$this->mytable] = $tables[$mtable] = $row = $this->table($mtable)->get($id);
                 }
                 if (!$row) {
                     log_message('error', dr_lang('删除内容（%s）不存在', $id));
                     continue;
                 }
+            }
+            if (defined('MODULE_CTABLE_CP_MAIN') && $this->mytable != $mtable) {
+                // 是否存在复制数据
+                $tables[$mtable] = $this->table($mtable)->get($id);
             }
 
             // 附表id
@@ -1171,7 +1222,7 @@ class Content extends \Phpcmf\Model {
 
             }
 
-            if (dr_is_app('cqx')
+            if (IS_ADMIN && dr_is_app('cqx')
                 && \Phpcmf\Service::M('content', 'cqx')->is_edit($row['catid'], $row['uid'])) {
                 log_message('error', dr_lang('删除内容（%s）：当前角色无权限管理此栏目', $id));
                 continue;
@@ -1393,7 +1444,11 @@ class Content extends \Phpcmf\Model {
             }
             // 栏目分表储存
             if (XR_C()->module['is_ctable'] && isset($tables[dr_module_ctable($this->mytable, $row['catid'])])) {
-                unset($tables[$this->mytable]);
+                if (defined('MODULE_CTABLE_CP_MAIN')) {
+                    // 是否存在复制数据
+                } else {
+                    unset($tables[$this->mytable]);
+                }
             }
             // 内容恢复
             foreach ($tables as $table => $t) {

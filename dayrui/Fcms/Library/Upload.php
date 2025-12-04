@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Library;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -77,7 +77,7 @@ class Upload {
         }
 
         // 验证伪装图片
-        if (in_array($file_ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+        if (in_array($file_ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'])) {
             $data = strlen($data) < 50 && @is_file($data) ? file_get_contents($data) : strtolower($data);
             if (strlen($data) < 50) {
                 return dr_return_data(0, dr_lang('图片文件不规范'). (IS_DEV ? '后台-系统-附件设置-可选择附件验证为宽松模式' : ''));
@@ -88,6 +88,8 @@ class Upload {
             } elseif (strpos($data, '.php') !== false) {
                 return dr_return_data(0, dr_lang('此图片不安全，禁止上传'). (IS_DEV ? '后台-系统-附件设置-可选择附件验证为宽松模式' : ''));
             } elseif (strpos($data, 'base64_decode(') !== false) {
+                return dr_return_data(0, dr_lang('此图片不安全，禁止上传'). (IS_DEV ? '后台-系统-附件设置-可选择附件验证为宽松模式' : ''));
+            } elseif (strpos($data, '<script') !== false) {
                 return dr_return_data(0, dr_lang('此图片不安全，禁止上传'). (IS_DEV ? '后台-系统-附件设置-可选择附件验证为宽松模式' : ''));
             }
         }
@@ -276,12 +278,14 @@ class Upload {
         ]);
     }
 
-    // base64模式
+    /**
+     * base64模式
+     */
     public function base64_image($config) {
 
         $data = $config['content'];
         $file_ext = $config['ext'] ? $config['ext'] : 'jpg'; // 扩展名
-        $file_name = 'base64_image'; // 文件实际名字
+        $file_name = isset($config['save_name']) && $config['save_name'] ? $config['save_name'] : 'base64_image'; // 文件实际名字
 
         // 安全验证
         $rt = $this->_safe_check($file_ext, $data);
@@ -361,7 +365,9 @@ class Upload {
         return !$this->error[$code] ? '上传错误('.$code.')' : $this->error[$code];
     }
 
-
+    /**
+     * 获取文件名
+     */
     public function file_name($name) {
         return $this->_file_name($name);
     }

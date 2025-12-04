@@ -1,10 +1,10 @@
 <?php
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  *
- * (c) 四川迅睿云软件开发有限公司 <q@xunruicms.com>
+ * (c) 网商CMS
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -12,15 +12,18 @@
 
 // CMS框架目录
 if (!defined('FRAMEPATH')) {
+     $frame = 'System';
     if (is_file(WRITEPATH.'frame.lock')) {
-        $frame = (string)file_get_contents(WRITEPATH.'frame.lock');
-        if (!is_file(FCPATH.$frame.'/Init.php')) {
-            $frame = 'CodeIgniter';
+        $name = (string)file_get_contents(WRITEPATH.'frame.lock');
+        if (is_file(FCPATH.$name.'/Init.php')) {
+            $frame = $name;
         }
-        define('FRAMEPATH', FCPATH.$frame.'/');
-    } else {
-        define('FRAMEPATH', FCPATH.'CodeIgniter/');
     }
+    // 低版本兼容
+    if ($frame == 'System' && version_compare(PHP_VERSION, '8.1') < 0 && is_file(FCPATH.'CodeIgniter/Init.php')) {
+        $frame = 'CodeIgniter';
+    }
+    define('FRAMEPATH', FCPATH.$frame.'/');
 }
 
 // CMS公共程序目录
@@ -57,6 +60,16 @@ define('IS_POST', isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'
 define('IS_AJAX_POST', IS_POST);
 // 当前系统时间戳
 define('SYS_TIME', $_SERVER['REQUEST_TIME'] ? $_SERVER['REQUEST_TIME'] : time());
+
+// 自定义函数库
+if (is_file(WEBPATH.'config/custom.php')) {
+    require WEBPATH.'config/custom.php';
+} elseif (is_file(CONFIGPATH.'custom.php')) {
+    require CONFIGPATH.'custom.php';
+}
+if (is_file(MYPATH.'Helper.php')) {
+    require MYPATH.'Helper.php';
+}
 
 // 系统变量
 $system = [
@@ -130,7 +143,7 @@ unset($my, $system);
 !defined('IS_FB_DEBUG') && define('IS_FB_DEBUG', CI_DEBUG ? 0 : 1);
 
 // 显示错误提示
-IS_ADMIN || IS_DEV ? error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING ^ E_STRICT ^ E_DEPRECATED) : error_reporting(0);
+IS_ADMIN || IS_DEV ? error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING ^ E_DEPRECATED) : error_reporting(0);
 
 // 显示错误提示
 if (CI_DEBUG) {
@@ -354,12 +367,16 @@ if (is_cli()) {
         $url.= 's';
     }
 	$host = strtolower($_SERVER['HTTP_HOST']);
-    if (strpos($host, ':') !== false) {
+    if (defined('IS_PORT_FIX') && IS_PORT_FIX && strpos($host, ':') === false) {
+        // 端口修复
+        $host.= ':'.IS_PORT_FIX;
+    } elseif (strpos($host, ':') !== false) {
         list($nhost, $port) = explode(':', $host);
         if ($port == 80) {
             $host = $nhost; // 排除80端口
         }
     }
+
     $url.= '://'.$host;
     IS_ADMIN && define('ADMIN_URL', $url.'/'); // 优先定义后台域名
     define('FC_NOW_URL', $url.($_SERVER['REQUEST_URI'] ? $_SERVER['REQUEST_URI'] : (isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING'] ? $_SERVER['PHP_SELF'].'?'.$_SERVER['QUERY_STRING'] : $_SERVER['PHP_SELF'])));
@@ -458,6 +475,28 @@ define('IS_USE_MEMBER',  is_file(dr_get_app_dir('member').'/install.lock') ? dr_
 // 是否使用建站系统
 define('IS_USE_MODULE',  is_file(dr_get_app_dir('module').'/install.lock') ? dr_get_app_dir('module') : '');
 
+// 自定义入口执行
+if (function_exists('cms_init')) {
+    cms_init();
+}
+
+// 判断自定义首页入口
+if (defined('CMSURI')
+    && !CMSURI && !IS_ADMIN
+    && !IS_API && !isset($_GET['s'])
+    && is_file(WRITEPATH.'index.lock')
+) {
+    $index = file_get_contents(WRITEPATH.'index.lock');
+    if ($index) {
+        list($a, $b, $c) = explode('/', trim($index));
+        if ($a && dr_is_app_dir($a) && $b && $c) {
+            $_GET['s'] = $a;
+            $_GET['c'] = trim($b);
+            $_GET['m'] = trim($c);
+        }
+    }
+}
+
 // 判断s参数,“应用程序”文件夹目录
 if (!IS_API && isset($_GET['s']) && preg_match('/^[a-z_]+$/i', $_GET['s'])) {
     // 判断会员模块,排除后台调用
@@ -496,23 +535,8 @@ if (!IS_API && isset($_GET['s']) && preg_match('/^[a-z_]+$/i', $_GET['s'])) {
 // 是否前端
 define('IS_HOME', !IS_ADMIN && !IS_MEMBER);
 
-// 自定义函数库
-if (is_file(WEBPATH.'config/custom.php')) {
-    require WEBPATH.'config/custom.php';
-} elseif (is_file(CONFIGPATH.'custom.php')) {
-    require CONFIGPATH.'custom.php';
-}
-if (is_file(MYPATH.'Helper.php')) {
-    require MYPATH.'Helper.php';
-}
-
 // 系统函数库
 require CMSPATH.'Core/Helper.php';
-
-// 自定义入口执行
-if (function_exists('cms_init')) {
-    cms_init();
-}
 
 // 进入系统框架加载
 require FRAMEPATH.'Init.php';

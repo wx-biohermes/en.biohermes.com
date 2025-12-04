@@ -64,7 +64,7 @@
         $.ajax({
             type: "POST",
             dataType: "json",
-            url: "{dr_url($uriprefix.'/scjt_edit')}",
+            url: "{dr_url($uriprefix.'/scjt_edit')}&catid={$get.catid}",
             data: $("#myform").serialize(),
             success: function(json) {
                 if (json.code == 1) {

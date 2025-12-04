@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Control\Api;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -181,7 +181,7 @@ class Run extends \Phpcmf\Common
 
         $file = WRITEPATH.'thread/'.dr_safe_filename(\Phpcmf\Service::L('input')->get('auth')).'.auth';
         if (!is_file($file)) {
-            log_message('error', '线程任务auth文件不存在：'.dr_now_url());
+            //log_message('error', '线程任务auth文件不存在：'.dr_now_url());
             exit('线程任务auth文件不存在'.$file);
         }
 

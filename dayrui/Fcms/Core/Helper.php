@@ -1,11 +1,24 @@
 <?php
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
 
+/**
+ * 结束程序
+ * @param $str
+ * @return 结束程序
+ */
+function dr_exit($str = '') {
+
+    if ($str) {
+        echo $str;
+    }
+    
+    exit;
+}
 
 /**
  * 判断是否为空白
@@ -364,7 +377,7 @@ function dr_is_admin_search_field($t) {
     if (!$t['ismain']) {
         return 0;
     } elseif (in_array($t['fieldtype'], [
-        'Uid', 'Text', 'Textarea', 'Textbtn',
+        'Uid', 'Text', 'Textarea', 'Textbtn', 'Textselect',
         'Ueditor', 'Select', 'Radio', 'Checkbox', 'Selects', 'Editor',
         'Linkage', 'Linkages'
     ])) {
@@ -533,7 +546,7 @@ function dr_is_module($dir, $siteid = SITE_ID) {
  * @param $t 替换后的值
  * @return 进行str_replace运算
  */
-function dr_rp($str, $o, $t) {
+function dr_rp($str, $o, $t = '') {
     return str_replace($o, $t, (string)$str);
 }
 
@@ -744,6 +757,26 @@ function dr_cms_domain_name($url) {
 }
 
 /**
+ * 获取非空值
+ * @param $param 指定文字
+ * @return 获取第一个非空值
+ */
+function dr_is_not_null_value(...$param) {
+
+    if (empty($param)) {
+        return '';
+    }
+
+    foreach ($param as $k => $t) {
+        if (!dr_is_empty($t)) {
+            return $t;
+        }
+    }
+
+    return '';
+}
+
+/**
  * 多语言输出
  * @param $param 指定文字
  * @return 将指定文字转换成系统对于的语言文字
@@ -774,13 +807,13 @@ function dr_lang(...$param) {
  * 获取终端列表
  * @return 获取终端列表
  */
-function dr_client_data() {
+function dr_client_data($siteid = SITE_ID) {
 
     $rt = [
         'pc' => 'PC端',
         'mobile' => '移动端',
     ];
-    $rt2 = \Phpcmf\Service::R(WRITEPATH.'config/app_client.php');
+    $rt2 = \Phpcmf\Service::R(WRITEPATH.'config/app_client_name_'.$siteid.'.php');
     if ($rt2) {
         $rt = $rt + $rt2;
     }
@@ -1359,36 +1392,44 @@ function dr_thumb_path($img = '') {
     }
 }
 
+// 无缩略图的地址
+function dr_nopic() {
+    $config = \Phpcmf\Service::C()->get_cache('site', SITE_ID, 'image');
+    if (isset($config['nopic']) && $config['nopic']) {
+        return dr_url_rel($config['nopic']);
+    }
+    return dr_url_rel(ROOT_THEME_PATH.'assets/images/nopic.gif');
+}
+
 // 缩略图
 function dr_thumb($img, $width = 0, $height = 0, $water = 0, $mode = 'auto', $webimg = 0) {
 
     if (!$img) {
-        return dr_url_rel(ROOT_THEME_PATH.'assets/images/nopic.gif');
+        return dr_nopic();
     } elseif (is_array($img)) {
-        return IS_DEV ? '文件参数不能是数组' : dr_url_rel(ROOT_THEME_PATH.'assets/images/nopic.gif');
+        return IS_DEV ? '文件参数不能是数组' : dr_nopic();
     } elseif (!$width && !$height && !$water) {
         return dr_get_file($img).(IS_DEV ? '#没有设置高宽参数，将以原图输出' : '');
     } elseif (is_numeric($img) || $webimg) {
-
-        list($cache_path, $cache_url, $ext, $path) = dr_thumb_path($img);
 
         // 强制缩略图水印
         if (defined('SITE_THUMB_WATERMARK') && SITE_THUMB_WATERMARK) {
             $water = 1;
         }
 
+        // 钩子处理
+        $rs = \Phpcmf\Hooks::trigger_callback('thumb', $img, $width, $height, $water, $mode, $webimg);
+        if ($rs && isset($rs['code']) && $rs['code'] && $rs['msg']) {
+            return $rs['msg'];
+        }
+
         if (!IS_DEV) {
             // 非开发者模式下读取缓存
+            list($cache_path, $cache_url, $ext, $path) = dr_thumb_path($img);
             $cache_file = $path.'/'.$width.'x'.$height.($water ? '_water' : '').'_'.$mode.'.'.($ext ? 'webp' : 'jpg');
             if (is_file($cache_path.$cache_file)) {
                 return dr_url_rel($cache_url.$cache_file);
             }
-        }
-
-        // 钩子处理
-        $rs = \Phpcmf\Hooks::trigger_callback('thumb_get', $cache_path, $cache_file);
-        if ($rs && isset($rs['code']) && $rs['code'] && $rs['msg']) {
-            return $rs['msg'];
         }
 
         return dr_url_rel(\Phpcmf\Service::L('image')->thumb($img, $width, $height, $water, $mode, $webimg));
@@ -1399,7 +1440,7 @@ function dr_thumb($img, $width = 0, $height = 0, $water = 0, $mode = 'auto', $we
         $file.= '#图片不是数字id号，dr_thumb函数无法进行缩略图处理';
     }
 
-    return $file ? $file : dr_url_rel(ROOT_THEME_PATH.'assets/images/nopic.gif');
+    return $file ? $file : dr_nopic();
 }
 
 
@@ -1412,14 +1453,14 @@ function dr_get_file($id, $full = 0) {
         return IS_DEV ? '文件参数没有值' : '';
     } elseif (is_array($id)) {
         return IS_DEV ? '文件参数不能是数组' : '';
-    }
-
-    if (is_numeric($id)) {
+    } elseif (is_numeric($id)) {
         // 表示附件id
         $info = \Phpcmf\Service::C()->get_attachment($id);
         if ($info['url']) {
             return $full ? $info['url'] : dr_url_rel($info['url']);
         }
+    } elseif (strpos($id, 'data:image/') === 0) {
+        return $id;
     }
 
     $file = dr_file($id, $full);
@@ -2033,11 +2074,7 @@ function dr_is_use_module() {
         return 0;
     }
 
-    if (is_file(IS_USE_MODULE.'/install.lock')) {
-        return IS_USE_MODULE;
-    }
-
-    return 0;
+    return IS_USE_MODULE;
 }
 
 /**
@@ -2177,7 +2214,7 @@ if (! function_exists('dr_is_image')) {
 
         return in_array(
             strpos($value, '.') !== false ? trim(strtolower(strrchr($value, '.')), '.') : $value,
-            ['jpg', 'gif', 'png', 'jpeg', 'webp']
+            ['jpg', 'gif', 'png', 'jpeg', 'webp', 'avif']
         );
     }
 }
@@ -2432,6 +2469,33 @@ function dr_randcode() {
     return \Phpcmf\Service::L('Form')->get_rand_value();
 }
 
+
+/**
+ * 判断是否为数字类型
+ *
+ * @param    $num     数字类型
+ * @param   $lang     长度范围之外时直接范围false
+ * @return  如果成功则返回 TRUE，失败则返回 FALSE
+ */
+function dr_is_numeric($num, $lang = 10) {
+
+    if (dr_strlen($num) > $lang) {
+        return false;
+    }
+    
+    if (is_numeric($num)) {
+        if (substr($num, 0, 1) == 0) {
+            // 0开头的不作为数字类处理
+            return false;
+        }
+        if (preg_match('/^[0-9]+$/', $num)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /**
  * 删除目录及目录下面的所有文件
  *
@@ -2516,7 +2580,7 @@ function dr_now_url() {
  */
 function dr_code($width, $height, $url = '') {
     $url = dr_web_prefix('index.php?s=api&c=api&m=captcha&width='.$width.'&height='.$height);
-    return '<img align="absmiddle" style="cursor:pointer;" onclick="this.src=\''.$url.'&\'+Math.random();" src="'.$url.'" />';
+    return '<img align="absmiddle" style="cursor:pointer;" onclick="this.src=\''.$url.'&t=\'+Math.random();" src="'.$url.'" />';
 }
 
 /**
@@ -2701,6 +2765,14 @@ function dr_catcher_data($url, $timeout = 0, $is_log = true, $ct = 0) {
         } else {
             if (!$ct) {
                 // 尝试重试
+                if (preg_match_all('/[\x{4e00}-\x{9fa5}]/u', $url, $mt)) {
+                    foreach ($mt[0] as $t) {
+                        $url = str_replace($t, urlencode($t), $url);
+                    }
+                }
+                if (strpos($url, ' ')) {
+                    $url = str_replace(' ', '%20', $url);
+                }
                 return dr_catcher_data($url, $timeout, $is_log, 1);
             } elseif (CI_DEBUG && $code && $is_log) {
                 log_message('error', '获取远程数据失败['.$url.']http状态：'.$code);
@@ -2990,12 +3062,12 @@ function dr_safe_replace_path($path) {
             MYPATH,
         ],
         [
-            'cache/',
+            '/cache/',
             '/',
-            'dayrui/App/',
-            'template/',
-            'dayrui/',
-            'dayrui/My/',
+            '/dayrui/App/',
+            '/template/',
+            '/dayrui/',
+            '/dayrui/My/',
         ],
         $path
     );
@@ -3012,6 +3084,12 @@ function dr_strcut($string, $limit = '100', $dot = '...') {
 
     if (!$string) {
         return '';
+    }
+
+    // 钩子处理
+    $rs = \Phpcmf\Hooks::trigger_callback('strcut', $string, $limit, $dot);
+    if ($rs && isset($rs['code']) && $rs['code'] && $rs['msg']) {
+        return $rs['msg'];
     }
 
     $a = 0;
@@ -3307,7 +3385,23 @@ function dr_string2array($data, $limit = '') {
  * @return  string
  */
 function dr_array2string($data) {
-    return $data ? json_encode($data, JSON_UNESCAPED_UNICODE | 320) : '';
+
+    if (!$data) {
+        return '';
+    }
+
+    if (is_array($data)) {
+        $str = json_encode($data, JSON_UNESCAPED_UNICODE | 320);
+        if (!$str) {
+            if (IS_DEV) {
+                log_message('debug', 'json_encode转换失败：'.json_last_error_msg());
+            }
+            return '';
+        }
+        return $str;
+    } else {
+        return $data;
+    }
 }
 
 /**
@@ -3901,8 +3995,7 @@ function dr_url_prefix($url, $domain = '', $siteid = SITE_ID, $is_mobile = '') {
         strlen($is_mobile) == 0 && $is_mobile = \Phpcmf\Service::IS_MOBILE();
 
         if (is_array($domain) && isset($domain['setting']['html_domain']) && $domain['setting']['html_domain']) {
-            $domain = $is_mobile && $domain['setting']['html_domain'] ? $domain['setting']['html_domain'] : $domain['setting']['html_domain'];
-            $domain = dr_http_prefix($domain);
+            $domain = dr_http_prefix($is_mobile && $domain['setting']['html_domain'] ? $domain['setting']['html_domain'] : $domain['setting']['html_domain']);
         }
 
         in_array($domain, ['MOD_DIR', 'share']) && $domain = '';
@@ -3911,7 +4004,9 @@ function dr_url_prefix($url, $domain = '', $siteid = SITE_ID, $is_mobile = '') {
         if ($domain && !dr_is_url($url)) {
             if (is_dir(dr_get_app_dir($domain))) {
                 $mod = \Phpcmf\Service::L('cache')->get('module-'.$siteid.'-'.$domain);
-                $domain = $mod && $mod['domain'] ? (\Phpcmf\Service::IS_MOBILE() && $mod['mobile_domain'] ? $mod['mobile_domain'] : $mod['domain']) : '';
+                if ($mod && $mod['domain']) {
+                    $domain = \Phpcmf\Service::IS_MOBILE() && $mod['mobile_domain'] ? $mod['mobile_domain'] : $mod['domain'];
+                }
             }
             // 域名是不是http开通
             if (!dr_is_url($domain)) {
@@ -4314,6 +4409,18 @@ class php5replace {
         return $this->data[$value[1]];
     }
 
+    // 替换数组变量值
+    function php55_replace_or_data($value) {
+        if (isset($value[1]) && $value[1]
+            && isset($this->data[$value[1]]) && $this->data[$value[1]]) {
+            return $this->data[$value[1]];
+        } elseif (isset($value[2]) && $value[2]
+            && isset($this->data[$value[2]]) && $this->data[$value[2]]) {
+            return $this->data[$value[2]];
+        }
+        return '';
+    }
+
     // 替换函数值
     function php55_replace_function($value) {
         if (!dr_is_safe_function($value[1])) {
@@ -4346,6 +4453,7 @@ class php5replace {
         $value = preg_replace_callback('#{([a-z_0-9]+)\((.*)\)}#Ui', [$this, 'php55_replace_function'], $value);
         $value = preg_replace_callback('#{([A-Z_]+)}#U', [$this, 'php55_replace_var'], $value);
         $value = preg_replace_callback('#{([a-z_0-9]+)}#U', [$this, 'php55_replace_data'], $value);
+        $value = preg_replace_callback('#{([a-z_0-9]+)\|\|([a-z_0-9]+)}#U', [$this, 'php55_replace_or_data'], $value);
         $value = preg_replace_callback('#{([a-z_0-9]+)\.([a-z_0-9]+)}#U', [$this, 'php55_replace_data'], $value);
 
         return $value;
@@ -4546,6 +4654,10 @@ if (! function_exists('dr_redirect'))
      * 跳转地址
      */
     function dr_redirect($url = '', $method = 'auto', $code = 0) {
+
+        if ($url == FC_NOW_URL) {
+            return; // 防止重复定向
+        }
 
         switch ($method) {
             case 'refresh':

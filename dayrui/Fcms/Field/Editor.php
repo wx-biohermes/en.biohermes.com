@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Field;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -29,6 +29,32 @@ class Editor extends \Phpcmf\Library\A_Field {
 
         if (!isset($option['attach_size']) || !$option['attach_size']) {
             $option['attach_size'] = 200;
+        }
+        if (!isset($option['toolbar']) || !$option['toolbar']) {
+            $option['toolbar'] = "['style', ['style']],
+      ['font', ['bold', 'italic', 'underline', 'clear']],
+      ['fontname', ['fontsize']],
+      ['color', ['color']],
+      ['para', ['ul', 'ol', 'paragraph']],
+      ['table', ['table']],
+      ['link', ['link']],
+      ['attach', ['attach']],
+      ['picture', ['qsimage', 'picture', 'help']],
+      ['video', ['video', 'llvideo']],
+      ['view', ['codeview'] ]";
+        }
+        if (!isset($option['toolbar_home']) || !$option['toolbar_home']) {
+            $option['toolbar_home'] = "['style', ['style']],
+      ['font', ['bold', 'italic', 'underline', 'clear']],
+      ['fontname', ['fontsize']],
+      ['color', ['color']],
+      ['para', ['ul', 'ol', 'paragraph']],
+      ['table', ['table']],
+      ['link', ['link']],
+      ['attach', ['attach']],
+      ['picture', ['qsimage', 'picture', 'help']],
+      ['video', ['video', 'llvideo']],
+      ['view', ['codeview'] ]";
         }
         if (!isset($option['attach_ext']) || !$option['attach_ext']) {
             $option['attach_ext'] = 'zip,rar,txt,doc';
@@ -109,6 +135,23 @@ class Editor extends \Phpcmf\Library\A_Field {
                         </div>
                     </div>
                 </div>
+                <div class="form-group" '.(!$option['show_bottom_boot'] ? 'style="display:none"' : '').'>
+                    <label class="col-md-2 control-label">'.dr_lang('提取缩略图限制').'</label>
+                    <div class="col-md-9">
+                        <div class="input-inline input-small">
+                            <div class="input-group">
+                                <span class="input-group-addon">'.dr_lang('宽大于').'</span>
+                                <input type="text"  name="data[setting][option][thumb][width]" value="'.($option['thumb']['width']).'" class="form-control" placeholder="px">
+                            </div>
+                        </div>
+                        <div class="input-inline input-small">
+                            <div class="input-group">
+                                <span class="input-group-addon">'.dr_lang('高大于').'</span>
+                                <input type="text"  name="data[setting][option][thumb][height]" value="'.($option['thumb']['height']).'" class="form-control" placeholder="px">
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <hr>
                 <div class="form-group">
                     <label class="col-md-2 control-label">'.dr_lang('图片title').'</label>
@@ -185,6 +228,21 @@ class Editor extends \Phpcmf\Library\A_Field {
                     <div class="col-md-9">
                         <label><input type="text" class="form-control" name="data[setting][option][video_size]" value="'.$option['video_size'].'"></label>
                         <span class="help-block">'.dr_lang('填写用于视频上传的最大允许上传的大小，单位MB').'</span>
+                    </div>
+                </div>
+                <hr>
+                <div class="form-group">
+                    <label class="col-md-2 control-label">'.dr_lang('后台工具栏图标').'</label>
+                    <div class="col-md-9">
+					<textarea id="field_default_value" style="width: 90%;height: 100px;" class="form-control" name="data[setting][option][toolbar]">'.$option['toolbar'].'</textarea>
+					
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label">'.dr_lang('前端工具栏图标').'</label>
+                    <div class="col-md-9">
+					<textarea id="field_default_value" style="width: 90%;height: 100px;" class="form-control" name="data[setting][option][toolbar_home]">'.$option['toolbar_home'].'</textarea>
+					
                     </div>
                 </div>
                 <hr>
@@ -275,6 +333,26 @@ class Editor extends \Phpcmf\Library\A_Field {
                         if (isset($_field['thumb']) && $_field['thumb']['fieldtype'] == 'File' && !\Phpcmf\Service::L('Field')->data[$_field['thumb']['ismain']]['thumb']) {
                             if (!is_numeric($img)) {
                                 // 下载缩略图
+                                $width = isset($field['setting']['option']['thumb']['width']) ? $field['setting']['option']['thumb']['width'] : 0;
+                                $height = isset($field['setting']['option']['thumb']['height']) ? $field['setting']['option']['thumb']['height'] : 0;
+                                // 获取图片信息
+                                if ($width || $height) {
+                                    $imageInfo = getimagesize($img);
+                                    if ($imageInfo !== false) {
+                                        // 宽度
+                                        if ($width && $imageInfo[0] < $width) {
+                                            $img = '';
+                                            continue;
+                                        }
+                                        if ($height && $imageInfo[1] < $height) {
+                                            $img = '';
+                                            continue;
+                                        }
+                                    } else {
+                                        $img = '';
+                                        continue;
+                                    }
+                                }
                                 // 判断域名白名单
                                 $arr = parse_url($img);
                                 $domain = $arr['host'];
@@ -433,7 +511,7 @@ class Editor extends \Phpcmf\Library\A_Field {
         $width = \Phpcmf\Service::IS_MOBILE_USER() ? '100%' : ($field['setting']['option']['width'] ? $field['setting']['option']['width'] : '100%');
 
         // 表单高度设置
-        $height = $field['setting']['option']['height'] ? $field['setting']['option']['height'] : '300';
+        $height = $field['setting']['option']['height'] ? $field['setting']['option']['height'] : '';
 
         // 字段提示信息
         $tips = $field['setting']['validate']['tips'] ? '<span class="help-block" id="dr_'.$name.'_tips">'.$field['setting']['validate']['tips'].'</span>' : '';
@@ -491,6 +569,17 @@ class Editor extends \Phpcmf\Library\A_Field {
         } else {
             $alt = '';
         }
+        $tool = '';
+        if (IS_ADMIN) {
+            if ($field['setting']['option']['toolbar']) {
+                $tool = $this->_toolbar($field['setting']['option']['toolbar']);
+            }
+        } else {
+            if ($field['setting']['option']['toolbar_home']) {
+                $tool = $this->_toolbar($field['setting']['option']['toolbar_home']);
+            }
+        }
+
         $wm = \Phpcmf\Service::C()->get_cache('site', SITE_ID, 'watermark', 'ueditor') || $field['setting']['option']['watermark'] ? 1 : 0;
         $str.= \Phpcmf\Service::L('js_packer')->pack("
         <script type=\"text/javascript\">
@@ -503,16 +592,21 @@ class Editor extends \Phpcmf\Library\A_Field {
             }
         }
             $(function(){
-            dr_is_auto_description_".$field['fieldname']."();
+                dr_is_auto_description_".$field['fieldname']."();
                 $('#dr_".$name."').summernote({
-                isMobileWidth: '".(\Phpcmf\Service::IS_MOBILE_USER() ? '95%' : '80%')."',
-                llVideoUrl: '".dr_web_prefix(''.(IS_ADMIN ? SELF.'?c=api' : 'index.php?s=api&c=file').'&m=input_file_list&is_iframe=1&p=' . $p)."',
-                llImageUrl: '".dr_web_prefix(''.(IS_ADMIN ? SELF.'?c=api' : 'index.php?s=api&c=file').'&m=input_file_list&is_iframe=1&p=' . $p2."&is_wm=".$wm)."',
-                attachUrl: '".dr_web_prefix(''.(IS_ADMIN ? SELF.'?c=api' : 'index.php?s=api&c=file').'&m=input_file_list&is_iframe=1&p=' . $p3)."',
-                isImageTitle:'".$title."',
-                isImageAlt:'".$alt."',
-                height:'".$height."',
-                width:'".$width."'});
+                    field: '".$field['fieldname']."',
+                    isMobileWidth: '".(\Phpcmf\Service::IS_MOBILE_USER() ? '95%' : '80%')."',
+                    llVideoUrl: '".dr_web_prefix(''.(IS_ADMIN ? SELF.'?c=api' : 'index.php?s=api&c=file').'&m=input_file_list&is_iframe=1&p=' . $p)."',
+                    llImageUrl: '".dr_web_prefix(''.(IS_ADMIN ? SELF.'?c=api' : 'index.php?s=api&c=file').'&m=input_file_list&is_iframe=1&p=' . $p2."&is_wm=".$wm)."',
+                    attachUrl: '".dr_web_prefix(''.(IS_ADMIN ? SELF.'?c=api' : 'index.php?s=api&c=file').'&m=input_file_list&is_iframe=1&p=' . $p3)."',
+                    videoUrl: '".dr_web_prefix(''.(IS_ADMIN ? SELF.'?c=api' : 'index.php?s=api&c=file').'&m=upload&is_iframe=1&token='.dr_get_csrf_token().'&rid='.$this->rid.'&p=' . $p)."',
+                    videoLinkUrl: '".dr_web_prefix(''.(IS_ADMIN ? SELF.'?c=api' : 'index.php?s=api&c=file').'&m=video&is_iframe=1&token='.dr_get_csrf_token().'&rid='.$this->rid.'&p=' . $p)."',
+                    isImageTitle:'".$title."',
+                    isImageAlt:'".$alt."',
+                    height:'".$height."',
+                    width:'".$width."'
+                    ".($tool)."
+                });
             });
             function dr_editor_down_img_".$field['fieldname']."(){
 var index = layer.load(2, {
@@ -619,11 +713,18 @@ $.ajax({
                   <a class="btn blue btn-xs" onclick="dr_editor_down_img_'.$field['fieldname'].'()"> '.dr_lang('一键下载远程图片').' </a>
                  </label>';
             }
-
             $str.= '</div>';
         }
 
 
+
         return $this->input_format($name, $text, $str.$tips);
+    }
+
+    private function _toolbar($json) {
+        if (strpos($json, '"') !== false) {
+            return '';
+        }
+        return ',toolbar: ['.$json.']';
     }
 }

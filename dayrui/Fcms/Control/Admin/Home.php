@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Control\Admin;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -62,25 +62,9 @@ class Home extends \Phpcmf\Common
             unset($menu['自定义控制台']);
         }
 
-        $frame = [];
-        if (IS_DEV || defined('DEMO_ADMIN_USERNAME')) {
-            $frame = [
-                'CodeIgniter',
-                'CodeIgniter72',
-                'ThinkPHP',
-                'Laravel',
-            ];
-            foreach ($frame as $i => $name) {
-                if (!is_file(FCPATH.$name.'/Init.php')) {
-                    unset($frame[$i]);
-                }
-            }
-        }
-
         \Phpcmf\Service::V()->assign([
             'menu' => \Phpcmf\Service::M('auth')->_admin_menu($menu),
             'admin' => $this->admin,
-            'frame' => dr_count($frame) > 1 ? $frame : [],
             'domain' => dr_get_domain_name(ROOT_URL),
             'license' => $this->cmf_license,
             'table_data' => $table_data,
@@ -274,7 +258,7 @@ class Home extends \Phpcmf\Common
                             unset($left['link'][$i]);
                             unset($my_menu[$tid]['left'][$if]['link'][$i]);
                             continue; // 没有划分本站点就不显示
-                        } elseif ($link['uri'] && !$this->_is_admin_auth($link['uri'])) {
+                        } elseif ($link['uri'] && !\Phpcmf\Service::M('auth')->_is_admin_auth($link['uri'], 1)) {
                             // 判断权限
                             unset($left['link'][$i]);
                             unset($my_menu[$tid]['left'][$if]['link'][$i]);
@@ -331,6 +315,7 @@ class Home extends \Phpcmf\Common
                 }
                 if (!$left_string) {
                     $first == $tid && $first = 0;
+                    unset($my_menu[$tid]);
                     continue; // 没有分组菜单就不要
                 }
                 $my_menu[$tid] = $top;

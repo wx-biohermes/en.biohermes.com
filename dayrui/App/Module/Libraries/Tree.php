@@ -571,13 +571,11 @@ class Tree {
                 }
                 if ($t['child']) {
                     // 下级
-                    $this->_tree_html.= ' <li> <a href="javascript:dr_cat_url(\''.$url.'\');"> '.$t['name'].' </a>';
+                    $this->_tree_html.= '<li><a href="javascript:dr_cat_url(\''.$url.'\');">'.$t['name'].'</a>';
                     $this->_tree_html($mid, $t['id']);
                     $this->_tree_html.= '</li>';
                 } else {
-                    $this->_tree_html.= ' <li data-jstree=\'\'>
-                            <a href="javascript:dr_cat_url(\''.$url.'\');"> '.$t['name'].' </a>
-                        </li>';
+                    $this->_tree_html.= '<li data-jstree=\'\'><a href="javascript:dr_cat_url(\''.$url.'\');">'.$t['name'].'</a></li>';
                 }
             }
         }

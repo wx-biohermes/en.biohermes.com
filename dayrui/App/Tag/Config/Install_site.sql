@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS `{dbprefix}tag` (
   `code` varchar(200) NOT NULL COMMENT '关键词代码',
   `pcode` varchar(255) DEFAULT NULL COMMENT '关键词代码',
   `hits` int(10) unsigned NOT NULL COMMENT '点击量(废除)',
+  `iscfile` tinyint(1) unsigned NOT NULL COMMENT '测试',
   `childids` varchar(255) NOT NULL COMMENT '子类集合',
   `content` text NOT NULL COMMENT '关键词描述',
   `displayorder` int(10) NOT NULL COMMENT '排序',

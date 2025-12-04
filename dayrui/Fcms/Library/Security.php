@@ -1,12 +1,12 @@
 <?php namespace Phpcmf\Library;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
 /**
- * 安全过滤
+ * 安全处理类
  */
 class Security {
 
@@ -856,6 +856,39 @@ class Security {
 		$str = str_replace($this->_never_call_str, array_keys($this->_never_call_str), $str);
 
 		return $str;
+	}
+
+	/**
+	 * name名称值
+	 */
+	public function csrf_token()
+	{
+		return 'csrf_'.substr(md5(SYS_KEY), 0, 10);
+	}
+
+	/**
+	 * 随机令牌
+	 */
+	public function csrf_hash()
+	{
+
+		$token = \Phpcmf\Service::L('cache')->get_auth_data('csrf_hash_'.SYS_KEY, SITE_ID, 86400);
+		if (!$token) {
+			$token = $this->csrf_update();
+		}
+
+		return $token;
+	}
+
+	/**
+	 * 更新令牌
+	 */
+	public function csrf_update() {
+
+		$key = bin2hex(random_bytes(32));
+		\Phpcmf\Service::L('cache')->set_auth_data('csrf_hash_'.SYS_KEY, $key);
+
+		return $key;
 	}
 
 

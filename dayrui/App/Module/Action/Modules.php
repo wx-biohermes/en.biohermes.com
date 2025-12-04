@@ -106,13 +106,7 @@ foreach ($module_all as $m) {
         // 副栏目判断
         if (isset($fields['catids']) && $fields['catids']['fieldtype'] = 'Catids') {
             foreach ($catids as $c) {
-                if (version_compare(\Phpcmf\Service::M()->db->getVersion(), '5.7.0') < 0) {
-                    // 兼容写法
-                    $fwhere[] = '`'.$table.'`.`catids` LIKE "%\"'.intval($c).'\"%"';
-                } else {
-                    // 高版本写法
-                    $fwhere[] = "(`{$table}`.`catids` <>'' AND JSON_CONTAINS (`{$table}`.`catids`->'$[*]', '\"".intval($c)."\"', '$'))";
-                }
+                $fwhere[] = \Phpcmf\Service::M()->where_json($table, 'catids', intval($c));
             }
         }
         if ($fwhere) {

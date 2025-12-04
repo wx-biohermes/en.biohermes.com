@@ -110,7 +110,7 @@ class Urlrule extends \Phpcmf\Table
         $server = strtolower($_SERVER['SERVER_SOFTWARE']);
         if (strpos($server, 'apache') !== FALSE) {
             $name = 'Apache';
-            $note = '<font color=red><b>将以下内容保存为.htaccess文件，放到每个域名所绑定的根目录</b></font>';
+            $note = '<font color=red><b>'.dr_lang('将以下内容保存为.htaccess文件，放到每个域名所绑定的根目录').'</b></font>';
             $code = '';
 
             // 子目录
@@ -131,7 +131,7 @@ class Urlrule extends \Phpcmf\Table
                 .'RewriteRule !.(js|ico|gif|jpe?g|bmp|png|css)$ '.$root.'/index.php [NC,L]'.PHP_EOL.PHP_EOL;
         } elseif (strpos($server, 'nginx') !== FALSE) {
             $name = $server;
-            $note = '<font color=red><b>将以下代码放到Nginx配置文件中去（如果是绑定了域名，所绑定目录也要配置下面的代码）</b></font>';
+            $note = '<font color=red><b>'.dr_lang('将以下代码放到Nginx配置文件中去（如果是绑定了域名，所绑定目录也要配置下面的代码）').'</b></font>';
             // 子目录
             $code = '###当存在多个子目录格式的域名时，需要多写几组location标签：location /目录/ '.PHP_EOL;
             if (isset($site['mobile']['mode']) && $site['mobile']['mode'] && $site['mobile']['dirname']) {
@@ -161,7 +161,7 @@ class Urlrule extends \Phpcmf\Table
                 .'}'.PHP_EOL;
         } else {
             $name = $server;
-            $note = '<font color=red><b>无法为此服务器提供伪静态规则，建议让运营商帮你把下面的Apache规则做转换</b></font>';
+            $note = '<font color=red><b>'.dr_lang('无法为此服务器提供伪静态规则，建议让运营商帮你把下面的Apache规则做转换').'</b></font>';
             $code = 'RewriteEngine On'.PHP_EOL
                 .'RewriteBase /'.PHP_EOL
                 .'RewriteCond %{REQUEST_FILENAME} !-f'.PHP_EOL
@@ -341,12 +341,14 @@ class Urlrule extends \Phpcmf\Table
                     $rule = $value['module'];
                     $cname = "【".$r['name']."】模块首页（{$rule}）";
                     list($preg, $rname) = $this->_rule_preg_value($rule);
-                    if (!$preg || !$rname) {
+                    if (!$preg) {
                         $error.= "<p>".$cname."无法识别，需要手动写解析规则</p>";
-                    } elseif (!isset($rname['{modname}'])) {
-                        $error.= "<p>".$cname."缺少{modname}标签，需要手动写解析规则</p>";
                     } else {
-                        $rule = 'index.php?s=$'.$rname['{modname}'];
+                        if (!isset($rname['{modname}'])) {
+                            $rule = 'index.php?s=手动填写模块目录';
+                        } else {
+                            $rule = 'index.php?s=$'.$rname['{modname}'];
+                        }
                         if (isset($write[$preg])) {
                             $error.= "<p>".$cname."与".$write[$preg]."规则存在冲突，需要手动写解析规则</p>";
                         } else {
@@ -359,15 +361,16 @@ class Urlrule extends \Phpcmf\Table
                     $rule = $value['list_page'];
                     $cname = "【".$r['name']."】模块栏目列表(分页)（{$rule}）";
                     list($preg, $rname) = $this->_rule_preg_value($rule);
-                    if (!$preg || !$rname) {
+                    if (!$rname) {
                         $error.= "<p>".$cname."无法识别，需要手动写解析规则</p>";
                     } elseif (!isset($rname['{page}'])) {
                         $error.= "<p>".$cname."缺少{page}标签，需要手动写解析规则</p>";
-                    } elseif (!isset($rname['{modname}'])) {
-                        $error.= "<p>".$cname."缺少{modname}标签，需要手动写解析规则</p>";
                     } elseif (!isset($rname['{dirname}']) && !isset($rname['{id}']) && !isset($rname['{pdirname}'])) {
                         $error.= "<p>".$cname."缺少{dirname}或{id}或{pdirname}标签，需要手动写解析规则</p>";
                     } else {
+                        if (!isset($rname['{modname}'])) {
+                            $rname['{modname}'] = '{modname}';
+                        }
                         if (isset($rname['{dirname}'])) {
                             // 目录格式
                             $rule = 'index.php?s=$'.$rname['{modname}'].'&c=category&dir=$'.$rname['{dirname}'].'&page=$'.$rname['{page}'];
@@ -378,6 +381,7 @@ class Urlrule extends \Phpcmf\Table
                             // id模式
                             $rule = 'index.php?s=$'.$rname['{modname}'].'&c=category&id=$'.$rname['{id}'].'&page=$'.$rname['{page}'];
                         }
+                        $rule = str_replace('${modname}', '手动填写模块目录', $rule);
                         if (isset($write[$preg])) {
                             $error.= "<p>".$cname."与".$write[$preg]."规则存在冲突，需要手动写解析规则</p>";
                         } else {
@@ -390,13 +394,14 @@ class Urlrule extends \Phpcmf\Table
                     $rule = $value['list'];
                     $cname = "【".$r['name']."】模块栏目列表（{$rule}）";
                     list($preg, $rname) = $this->_rule_preg_value($rule);
-                    if (!$preg || !$rname) {
+                    if (!$rname) {
                         $error.= "<p>".$cname."无法识别，需要手动写解析规则</p>";
-                    } elseif (!isset($rname['{modname}'])) {
-                        $error.= "<p>".$cname."缺少{modname}标签，需要手动写解析规则</p>";
                     } elseif (!isset($rname['{dirname}']) && !isset($rname['{id}']) && !isset($rname['{pdirname}'])) {
                         $error.= "<p>".$cname."缺少{dirname}或{id}或{pdirname}标签，需要手动写解析规则</p>";
                     } else {
+                        if (!isset($rname['{modname}'])) {
+                            $rname['{modname}'] = '{modname}';
+                        }
                         if (isset($rname['{dirname}'])) {
                             // 目录格式
                             $rule = 'index.php?s=$'.$rname['{modname}'].'&c=category&dir=$'.$rname['{dirname}'];
@@ -407,6 +412,7 @@ class Urlrule extends \Phpcmf\Table
                             // id模式
                             $rule = 'index.php?s=$'.$rname['{modname}'].'&c=category&id=$'.$rname['{id}'];
                         }
+                        $rule = str_replace('${modname}', '手动填写模块目录', $rule);
                         if (isset($write[$preg])) {
                             $error.= "<p>".$cname."与".$write[$preg]."规则存在冲突，需要手动写解析规则</p>";
                         } else {
@@ -419,16 +425,18 @@ class Urlrule extends \Phpcmf\Table
                     $rule = $value['show_page'];
                     $cname = "【".$r['name']."】模块内容页(分页)（{$rule}）";
                     list($preg, $rname) = $this->_rule_preg_value($rule);
-                    if (!$preg || !$rname) {
+                    if (!$rname) {
                         $error.= "<p>".$cname."无法识别，需要手动写解析规则</p>";
-                    } elseif (!isset($rname['{modname}'])) {
-                        $error.= "<p>".$cname."缺少{modname}标签，需要手动写解析规则</p>";
                     } elseif (!isset($rname['{id}'])) {
                         $error.= "<p>".$cname."缺少{id}标签，需要手动写解析规则</p>";
                     } elseif (!isset($rname['{page}'])) {
                         $error.= "<p>".$cname."缺少{page}标签，需要手动写解析规则</p>";
                     } else {
+                        if (!isset($rname['{modname}'])) {
+                            $rname['{modname}'] = '{modname}';
+                        }
                         $rule = 'index.php?s=$'.$rname['{modname}'].'&c=show&id=$'.$rname['{id}'].'&page=$'.$rname['{page}'];
+                        $rule = str_replace('${modname}', '手动填写模块目录', $rule);
                         if (isset($write[$preg])) {
                             $error.= "<p>".$cname."与".$write[$preg]."规则存在冲突，需要手动写解析规则</p>";
                         } else {
@@ -441,14 +449,16 @@ class Urlrule extends \Phpcmf\Table
                     $rule = $value['show'];
                     $cname = "【".$r['name']."】模块内容页（{$rule}）";
                     list($preg, $rname) = $this->_rule_preg_value($rule);
-                    if (!$preg || !$rname) {
+                    if (!$rname) {
                         $error.= "<p>".$cname."无法识别，需要手动写解析规则</p>";
                     } elseif (!isset($rname['{id}'])) {
                         $error.= "<p>".$cname."缺少{id}标签，需要手动写解析规则</p>";
-                    } elseif (!isset($rname['{modname}'])) {
-                        $error.= "<p>".$cname."缺少{modname}标签，需要手动写解析规则</p>";
                     } else {
+                        if (!isset($rname['{modname}'])) {
+                            $rname['{modname}'] = '{modname}';
+                        }
                         $rule = 'index.php?s=$'.$rname['{modname}'].'&c=show&id=$'.$rname['{id}'];
+                        $rule = str_replace('${modname}', '手动填写模块目录', $rule);
                         if (isset($write[$preg])) {
                             $error.= "<p>".$cname."与".$write[$preg]."规则存在冲突，需要手动写解析规则</p>";
                         } else {
@@ -461,14 +471,16 @@ class Urlrule extends \Phpcmf\Table
                     $rule = $value['search_page'];
                     $cname = "【".$r['name']."】模块搜索页(分页)（{$rule}）";
                     list($preg, $rname) = $this->_rule_preg_value($rule);
-                    if (!$preg || !$rname) {
+                    if (!$rname) {
                         $error.= "<p>".$cname."无法识别，需要手动写解析规则</p>";
-                    } elseif (!isset($rname['{modname}'])) {
-                        $error.= "<p>".$cname."缺少{modname}标签，需要手动写解析规则</p>";
-                    } elseif (!isset($rname['{param}'])) {
+                    } elseif (!isset($rname['{param}']) && !isset($rname['{rewrite}'])) {
                         $error.= "<p>".$cname."缺少{param}标签，需要手动写解析规则</p>";
                     } else {
-                        $rule = 'index.php?s=$'.$rname['{modname}'].'&c=search&rewrite=$'.$rname['{param}'];
+                        if (!isset($rname['{modname}'])) {
+                            $rname['{modname}'] = '{modname}';
+                        }
+                        $rule = 'index.php?s=$'.$rname['{modname}'].'&c=search&rewrite=$'.($rname['{param}'] ? $rname['{param}'] : $rname['{rewrite}']);
+                        $rule = str_replace('${modname}', '手动填写模块目录', $rule);
                         if (isset($write[$preg])) {
                             $error.= "<p>".$cname."与".$write[$preg]."规则存在冲突，需要手动写解析规则</p>";
                         } else {
@@ -481,12 +493,14 @@ class Urlrule extends \Phpcmf\Table
                     $rule = $value['search'];
                     $cname = "【".$r['name']."】模块搜索页（{$rule}）";
                     list($preg, $rname) = $this->_rule_preg_value($rule);
-                    if (!$preg || !$rname) {
+                    if (!$preg) {
                         $error.= "<p>".$cname."无法识别，需要手动写解析规则</p>";
-                    } elseif (!isset($rname['{modname}'])) {
-                        $error.= "<p>".$cname."缺少{modname}标签，需要手动写解析规则</p>";
                     } else {
+                        if (!isset($rname['{modname}'])) {
+                            $rname['{modname}'] = '{modname}';
+                        }
                         $rule = 'index.php?s=$'.$rname['{modname}'].'&c=search';
+                        $rule = str_replace('${modname}', '手动填写模块目录', $rule);
                         if (isset($write[$preg])) {
                             $error.= "<p>".$cname."与".$write[$preg]."规则存在冲突，需要手动写解析规则</p>";
                         } else {
@@ -699,6 +713,7 @@ class Urlrule extends \Phpcmf\Table
 
                     '#\{tag\}#U',
                     '#\{param\}#U',
+                    '#\{rewrite\}#U',
 
                     '#\{y\}#U',
                     '#\{m\}#U',
@@ -721,6 +736,7 @@ class Urlrule extends \Phpcmf\Table
                     '([a-z]+)',
                     '([a-z]+)',
 
+                    '(.+)',
                     '(.+)',
                     '(.+)',
 

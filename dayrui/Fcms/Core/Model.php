@@ -1,7 +1,7 @@
 <?php namespace Phpcmf;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -137,13 +137,13 @@ class Model {
 
     // 附表不存在时创建附表
     public function is_data_table($table, $tid) {
-        if ($tid > 0 && !$this->db->query("SHOW TABLES LIKE '".$this->dbprefix($table.$tid)."'")->getRowArray()) {
+        if ($tid > 0 && !$this->is_table_exists($this->dbprefix($table.$tid))) {
             // 附表不存在时创建附表
-            $sql = $this->db->query("SHOW CREATE TABLE `".$this->dbprefix($table)."0`")->getRowArray();
+            list($a, $sql, $name) = \Phpcmf\Service::M('table')->create_table_sql($this->dbprefix($table).'0');
             $this->db->query(str_replace(
-                array($sql['Table'], 'CREATE TABLE '),
+                array($name, 'CREATE TABLE '),
                 array($this->dbprefix($table.$tid), 'CREATE TABLE IF NOT EXISTS '),
-                $sql['Create Table']
+                $a
             ));
         }
         $this->_clear();
@@ -677,7 +677,7 @@ class Model {
             }
         } elseif (isset($field['fieldtype']) && $field['fieldtype'] == 'File'
             && $field['fieldname'] == 'thumb' && $value == 1) {
-            return '`'.$table.'`.`'.$name.'` <> ""';
+            return '`'.$table.'`.`'.$name.'` <> \'\'';
         } elseif (isset($field['fieldtype']) && strpos($field['fieldtype'], 'map') !== false) {
             // 地图
             list($a, $km) = explode('|', $value);
@@ -739,23 +739,11 @@ class Model {
                         $ids = explode(',', $data['childids']);
                         foreach ($ids as $id) {
                             if ($id) {
-                                if (version_compare(\Phpcmf\Service::M()->db->getVersion(), '5.7.0') < 0) {
-                                    // 兼容写法
-                                    $where[] = '`'.$table.'`.`'.$name.'` LIKE "%\"'.intval($id).'\"%"';
-                                } else {
-                                    // 高版本写法
-                                    $where[] = "(CASE WHEN JSON_VALID(`{$table}`.`{$name}`) THEN JSON_CONTAINS (`{$table}`.`{$name}`->'$[*]', '\"".intval($id)."\"', '$') ELSE null END)";
-                                }
+                                $where[] = $this->where_json($table, $name, $id);
                             }
                         }
                     } else {
-                        if (version_compare(\Phpcmf\Service::M()->db->getVersion(), '5.7.0') < 0) {
-                            // 兼容写法
-                            $where[] = '`'.$table.'`.`'.$name.'` LIKE "%\"'.intval($data['ii']).'\"%"';
-                        } else {
-                            // 高版本写法
-                            $where[] = "(CASE WHEN JSON_VALID(`{$table}`.`{$name}`) THEN JSON_CONTAINS (`{$table}`.`{$name}`->'$[*]', '\"".intval($data['ii'])."\"', '$') ELSE null END)";
-                        }
+                        $where[] = $this->where_json($table, $name, intval($data['ii']));
                     }
                 }
             }
@@ -783,13 +771,7 @@ class Model {
             }
             foreach ($arr as $val) {
                 if ($val) {
-                    if (version_compare(\Phpcmf\Service::M()->db->getVersion(), '5.7.0') < 0) {
-                        // 兼容写法
-                        $where[] = '`'.$table.'`.`'.$name.'` LIKE "%\"'.$this->db->escapeString(dr_safe_replace($val), true).'\"%"';
-                    } else {
-                        // 高版本写法
-                        $where[] = "(CASE WHEN JSON_VALID(`{$table}`.`{$name}`) THEN JSON_CONTAINS (`{$table}`.`{$name}`->'$[*]', '\"".$this->db->escapeString(dr_safe_replace($val), true)."\"', '$') ELSE null END)";
-                    }
+                    $where[] = $this->where_json($table, $name, $this->db->escapeString(dr_safe_replace($val), true));
                 }
             }
             return $where ? '('.implode(strpos($value,  '||') !== false ? ' AND ' : ' OR ', $where).')' : '`'.$table.'`.`id` = 0';
@@ -797,7 +779,7 @@ class Model {
             $arr = explode('|', $value);
             $where = [];
             foreach ($arr as $val) {
-                if (is_numeric($val)) {
+                if (dr_is_numeric($val)) {
                     $where[] = ' FIND_IN_SET ('.intval($value).',`'.$table.'`.`'.$name.'`)';
                 } else {
                     $where[] = ' FIND_IN_SET ("'.dr_safe_replace($value).'",`'.$table.'`.`'.$name.'`)';
@@ -824,14 +806,14 @@ class Model {
             }
             $where = [];
             foreach ($arr as $val) {
-                if (is_numeric($val)) {
+                if (dr_is_numeric($val)) {
                     $where[] = '`'.$table.'`.`'.$name.'`='.$val;
                 } else {
-                    $where[] = '`'.$table.'`.`'.$name.'`="'.dr_safe_replace($val, ['\\', '/']).'"';
+                    $where[] = '`'.$table.'`.`'.$name.'`=\''.dr_safe_replace($val, ['\\', '/']).'\'';
                 }
             }
             return $where ? '('.implode(strpos($value,  '||') !== false ? ' AND ' : ' OR ', $where).')' : '`'.$table.'`.`id` = 0';
-        } elseif (substr_count($value, ',') == 1 && preg_match('/[0-9\.]+,[0-9\.]+/', $value)) {
+        } elseif (substr_count($value, ',') == 1 && preg_match('/[\+\-0-9\.]+,[\+\-0-9\.]+/', $value)) {
             // BETWEEN 条件
             list($s, $e) = explode(',', $value);
             $s = floatval($s);
@@ -839,7 +821,7 @@ class Model {
             if ($s == $e && $s == 0) {
                 return '`'.$table.'`.`'.$name.'` = 0';
             }
-            if (!$e) {
+            if (!$e && $s > 0) {
                 return '`'.$table.'`.`'.$name.'` > '.$s;
             } else {
                 return '`'.$table.'`.`'.$name.'` BETWEEN '.$s.' AND '.$e;
@@ -848,18 +830,18 @@ class Model {
             // like 条件
             $arr = explode('%', str_replace(' ', '%', $value));
             if (count($arr) == 1) {
-                return '`'.$table.'`.`'.$name.'` LIKE "%'.trim($this->db->escapeString($value, true), '%').'%"';
+                return '`'.$table.'`.`'.$name.'` LIKE \'%'.trim($this->db->escapeString($value, true), '%').'%\'';
             } else {
                 $wh = [];
                 foreach ($arr as $c) {
-                    $c && $wh[] = '`'.$table.'`.`'.$name.'` LIKE "%'.trim($this->db->escapeString($c, true)).'%"';
+                    $c && $wh[] = '`'.$table.'`.`'.$name.'` LIKE \'%'.trim($this->db->escapeString($c, true)).'%\'';
                 }
                 return $wh ? ('('.implode(strpos($value,  '%%') !== false ? ' AND ' : ' OR ', $wh).')') : '';
             }
-        } elseif (is_numeric($value)) {
+        } elseif (dr_is_numeric($value)) {
             return '`'.$table.'`.`'.$name.'`='.$value;
         } else {
-            return '`'.$table.'`.`'.$name.'`="'.dr_safe_replace($value, ['\\', '/']).'"';
+            return '`'.$table.'`.`'.$name.'`=\''.dr_safe_replace($value, ['\\', '/']).'\'';
         }
     }
 
@@ -890,7 +872,7 @@ class Model {
             }
         } elseif ($param['field'] == 'uid' || $field[$param['field']]['fieldtype'] == 'Uid') {
             // 数字查询作为账号id
-            $uid = is_numeric($param['keyword']) ? intval($param['keyword']) : 0;
+            $uid = dr_is_numeric($param['keyword']) ? intval($param['keyword']) : 0;
             if ($uid && $this->db->table('member')->where('id', $uid)->countAllResults()) {
                 $select->where($table.'.`'.$param['field'].'` = '.intval($param['keyword']));
             } else {
@@ -982,7 +964,7 @@ class Model {
                 }
             }
             // 栏目查询
-            if (isset($param['catid']) && $param['catid']) {
+            if (isset($param['catid']) && $param['catid'] && function_exists('dr_cat_value')) {
                 $mid = defined('MOD_DIR') ? MOD_DIR : (APP_DIR ? APP_DIR : 'share');
                 $cat = dr_cat_value($mid, $param['catid']);
                 $cat && $cat['child'] ? $select->whereIn('catid', explode(',', $cat['childids'])) : $select->where('catid', (int)$param['catid']);
@@ -1122,7 +1104,7 @@ class Model {
 
         if (is_array($name)) {
             foreach ($name as $f => $v) {
-                $this->param['where'][] = !is_numeric($f) ? [$f, $v] : $v;
+                $this->param['where'][] = !dr_is_numeric($f) ? [$f, $v] : $v;
             }
         } else {
             $this->param['where'][] = dr_strlen($value) ? [$name, $value] : $name;
@@ -1138,9 +1120,33 @@ class Model {
             return $this;
         }
 
-        $this->param['where'][] = $name.' LIKE "%'.$value.'%"';
+        if (method_exists($this->db, 'whereLike')) {
+            $this->param['where'][] = $this->db->whereLike($name, $value);
+        } else {
+            $this->param['where'][] = $name.' LIKE "%'.$value.'%"';
+        }
 
         return $this;
+    }
+
+    // json
+    public function where_json($table, $name, $value) {
+
+        if (method_exists($this->db, 'whereJson')) {
+            return $this->db->whereJson($table, $name, $value);
+        }
+
+        if (strpos($name, '`') === false) {
+            $name = $table ? '`'.$table.'`.`'.$name.'`' : '`'.$name.'`';
+        }
+
+        if (version_compare($this->db->getVersion(), '5.7.0') < 0) {
+            // 兼容写法
+            return $name.' LIKE \'%"'.$value.'"%\'';
+        } else {
+            // 高版本写法
+            return "(CASE WHEN JSON_VALID({$name}) THEN JSON_CONTAINS ({$name}->'$[*]', '\"".$value."\"', '$') ELSE null END)";
+        }
     }
 
     // in条件
@@ -1157,7 +1163,6 @@ class Model {
         return $this;
     }
 
-    // 时间戳条件
     public function where_date($name, $value) {
 
         if (!$name) {
@@ -1185,7 +1190,7 @@ class Model {
      * @param int $length 查询数量
      * @return $this
      */
-    public function limit(int $offset, int $length = null) {
+    public function limit($offset, $length = 0) {
 
         $this->param['limit'] = $offset . ($length ? ',' . $length : '');
 
@@ -1200,7 +1205,6 @@ class Model {
         return $this;
     }
 
-    // 分组
     public function group_by($value) {
 
         $this->param['group'] = $value;
@@ -1242,7 +1246,7 @@ class Model {
             $ret = '';
             $queries = explode('SQL_FINECMS_EOL', trim($query));
             foreach($queries as $query) {
-                $ret.= $query[0] == '#' || $query[0].$query[1] == '--' ? '' : $query;
+                $ret.= $query[0] == '#' || $query[0].$query[1] == '--' ? '' : ($query ? PHP_EOL.$query : '');
             }
             if (!$ret) {
                 continue;
@@ -1286,6 +1290,13 @@ class Model {
         $this->_clear();
 
         return $rt;
+    }
+
+    // 关闭数据库
+    public function close() {
+        if (method_exists($this->db, 'close')) {
+            $this->db->close();
+        }
     }
 
     private function _clear() {

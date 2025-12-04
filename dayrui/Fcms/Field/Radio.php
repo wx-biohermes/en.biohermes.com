@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Field;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -29,7 +29,8 @@ class Radio extends \Phpcmf\Library\A_Field {
                 continue;
             }
             $str.= '<label class="mt-checkbox mt-checkbox-outline">';
-            $str.= '<input type="checkbox" '.(dr_in_array($t['fieldname'], $option['field_ld'][$id][$at]) ? 'checked' : '').' name="data[setting][option][field_ld]['.$id.']['.$at.'][]" value="'.$t['fieldname'].'"> '.$t['name'].' ';
+            $str.= '<input type="checkbox" '.(dr_in_array($t['fieldname'], $option['field_ld'][$id][$at]) ? 'checked' : '').' name="data[setting][option][field_ld]['.$id.']['.$at.'][]" value="'.$t['fieldname'].'"> '
+                .($t['setting']['validate']['required'] ? '<b class="required" aria-required="true"> * </b>' : '').$t['name'].' ';
             $str.= '<span></span>';
             $str.= '</label>';
         }
@@ -48,18 +49,18 @@ class Radio extends \Phpcmf\Library\A_Field {
 
         $data = dr_format_option_array($option['options']);
         if (!$data) {
-            $ld = '需要保存字段配置后才能配置联动关系';
+            $ld = dr_lang('需要保存字段配置后才能配置联动关系');
         } else {
             $ld = '<div class="table-scrollable">';
             $ld.= '<table class="table table-striped table-bordered table-advance ">';
             $ld.= '<thead>';
             $ld.= '<tr>';
-            $ld.= '<th width="120">选项</th>';
-            $ld.= '<th>隐藏字段</th>';
+            $ld.= '<th width="120">'.dr_lang('选项').'</th>';
+            $ld.= '<th>'.dr_lang('隐藏字段').'</th>';
             $ld.= '</tr>';
             $ld.= '</thead>';
             $ld.= '<tbody>';
-            $data['dr_null'] = '未选择时';
+            $data['dr_null'] = dr_lang('未选择时');
             foreach ($data as $id => $name) {
                 $ld.= '<tr>';
                 $ld.= '<td>'.$name.'</td>';
@@ -71,7 +72,7 @@ class Radio extends \Phpcmf\Library\A_Field {
             $ld.= '</div>';
         }
 
-		$option['options'] = isset($option['options']) ? $option['options'] : '选项名称1|1'.PHP_EOL.'选项名称2|2';
+		$option['options'] = isset($option['options']) ? $option['options'] : 'name1|1'.PHP_EOL.'name2|2';
 
 
 
@@ -85,6 +86,17 @@ class Radio extends \Phpcmf\Library\A_Field {
 					<span class="help-block">'.dr_lang('选项值建议使用从1开始的数字，不得带符号，也可以省略不写').'</span>
 				</div>
 			</div>
+			<div class="form-group">
+            <label class="col-md-2 control-label">'.dr_lang('多语言翻译').'</label>
+            <div class="col-md-9">
+                <div class="mt-radio-inline">
+                    <label class="mt-radio mt-radio-outline"><input type="radio" value="0" name="data[setting][option][lang]" '.(!$option['lang'] ? 'checked' : '').' > '.dr_lang('开启').' <span></span></label>
+                    &nbsp; &nbsp;
+                    <label class="mt-radio mt-radio-outline"><input type="radio" value="1" name="data[setting][option][lang]" '.($option['lang'] ? 'checked' : '').' > '.dr_lang('关闭').' <span></span></label>
+                </div>
+                <span class="help-block">'.dr_lang('开启后选项值被系统语言包翻译，否则就保持原样显示').'</span>
+            </div>
+        	</div>
 			<div class="form-group">
 				<label class="col-md-2 control-label">'.dr_lang('条件联动关联').'</label>
 				<div class="col-md-9">
@@ -105,7 +117,6 @@ class Radio extends \Phpcmf\Library\A_Field {
 				<div class="col-md-9">
 					'.$ld.'
 					<span class="help-block">'.dr_lang('当选择某一个选项时会联动显示或隐藏指定的字段').'</span>
-					<span class="help-block">'.dr_lang('需要把参与的字段属性不要设置为必填字段').'</span>
 				</div>
 			</div>
 			<div class="form-group">
@@ -208,7 +219,7 @@ class Radio extends \Phpcmf\Library\A_Field {
 			foreach ($options as $v => $n) {
 				$s = $v == $value ? ' checked' : '';
 				$kj = '<input type="radio" name="data['.$name.']" value="'.$v.'" '.$s.' '.$field['setting']['validate']['formattr'].' />';
-				$str.= '<label class="mt-radio mt-radio-outline">'.$kj.' '.dr_lang($n).' <span></span> </label>';
+				$str.= '<label class="mt-radio mt-radio-outline">'.$kj.' '.(isset($field['setting']['option']['lang']) && $field['setting']['option']['lang'] ?  $n : dr_lang($n)).' <span></span> </label>';
 			}
 		}
 

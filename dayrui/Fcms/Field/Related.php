@@ -68,6 +68,26 @@ class Related extends \Phpcmf\Library\A_Field {
                     </div>
                 </div>'];
 	}
+
+    /**
+     * 验证字段值
+     */
+
+    public function check_value($field, $value) {
+        // 判断被关联
+        $mid = $field['setting']['option']['module'];
+        if ($mid && dr_is_module($mid)) {
+            $fname = $field['fieldname'].'_join';
+            $table = \Phpcmf\Service::M()->dbprefix(dr_module_table_prefix($mid));
+            if (\Phpcmf\Service::M()->db->tableExists($table)) {
+                if (!\Phpcmf\Service::M()->db->fieldExists($fname, $table)) {
+                    \Phpcmf\Service::M('table')->add_field($table, $fname, 'INT(10)', 'DEFAULT NULL', '被关联字段');
+                }
+                \Phpcmf\Service::L('field')->set_post_temp_data('related', [$mid, $fname, $value]);
+            }
+        }
+        return '';
+    }
 	
 	/**
 	 * 字段输出

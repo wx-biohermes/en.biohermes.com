@@ -131,6 +131,7 @@
     $member = \Phpcmf\Service::C()->member;
     if ($member) {
 
+        $config = \Phpcmf\Service::M('app')->get_config('safe');
         if (!IS_ADMIN && isset($config['login']['admin_not']) && $config['login']['admin_not'] && $member['is_admin']) {
             if (in_array(\Phpcmf\Service::L('router')->class, ['api', 'login', 'register'])) {
                 return; // 本身控制器不判断
@@ -140,7 +141,6 @@
 
         $uri = \Phpcmf\Service::L('router')->class.'/'.\Phpcmf\Service::L('router')->method;
         $log = \Phpcmf\Service::M('login', 'safe')->get_log($member['uid']);
-        $config = \Phpcmf\Service::M('app')->get_config('safe');
 
         $use = IS_ADMIN ? 'admin' : (IS_MEMBER ? 'member' : '');
         if (!$use) {

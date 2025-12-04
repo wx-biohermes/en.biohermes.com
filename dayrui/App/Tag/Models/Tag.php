@@ -35,10 +35,16 @@ class Tag extends \Phpcmf\Model
         return 'keywords';
     }
 
-    public function clear_data() {
+    public function clear_tree_data() {
         dr_dir_delete($this->link_cache.'tree_'.SITE_ID.'/');
-        dr_dir_delete($this->link_cache.'url_'.SITE_ID.'/');
         dr_mkdirs($this->link_cache.'tree_'.SITE_ID.'/');
+        dr_dir_delete($this->link_cache.'index_'.SITE_ID.'/');
+        dr_mkdirs($this->link_cache.'index_'.SITE_ID.'/');
+        file_put_contents($this->link_cache.'data_'.SITE_ID.'.tag', '');
+    }
+
+    public function clear_url_data() {
+        dr_dir_delete($this->link_cache.'url_'.SITE_ID.'/');
         dr_mkdirs($this->link_cache.'url_'.SITE_ID.'/');
         file_put_contents($this->link_cache.'data_'.SITE_ID.'.tag', '');
     }
@@ -51,18 +57,33 @@ class Tag extends \Phpcmf\Model
 
         $name = trim((string)$data['name']);
         $module = \Phpcmf\Service::L('cache')->get('module-'.SITE_ID.'-content');
+        $config = $this->get_config();
         foreach ($module as $t) {
             $tfield = \Phpcmf\Service::M('tag', 'tag')->tag_field($t['dirname']);
+            $sql = 'select id from '
+                .$this->dbprefix(SITE_ID.'_'.$t['dirname'])
+                .' where `'.$tfield.'` LIKE \'%'.$name.'%\' order by '
+                .($config['order_by'] ? $config['order_by'] : 'updatetime desc').' limit 50;';
+            $rows = $this->db->query($sql)->getResultArray();
+            if ($rows) {
+                $cid = '';
+                foreach ($rows as $r) {
+                    $cid.= $r['id'].',';
+                }
+                $cid = trim($cid, ',');
+                $file = $this->link_cache.'index_'.SITE_ID.'/'.$t['dirname'].'-'.md5($name).'.php';
+                file_put_contents($file, trim($cid, ','));
+            }
+            /*
             $sql = 'replace into '.$this->dbprefix(SITE_ID.'_tag_'.$t['dirname'])
                 .' (cid, tid) select id,"'.$data['id'].'" from '
                 .$this->dbprefix(SITE_ID.'_'.$t['dirname'])
-                .' where FIND_IN_SET("'.$name.'", `'.$tfield.'`)';
+                .' where FIND_IN_SET("'.$name.'", `'.$tfield.'`);';
             if ($ct) {
                 file_put_contents(WRITEPATH.'app/tag.sql', $sql.PHP_EOL, FILE_APPEND);
             } else {
                 $this->query($sql);
             }
-            /*
             $list = $this->table_site($t['dirname'])->where('FIND_IN_SET("'.$name.'", `'.$tfield.'`)')->select('id')->getAll();
             if ($list) {
                 foreach ($list as $a) {
@@ -74,12 +95,13 @@ class Tag extends \Phpcmf\Model
             }*/
         }
 
-        dr_mkdirs($this->link_cache.'index_'.SITE_ID.'/');
-        $file = $this->link_cache.'index_'.SITE_ID.'/'.md5($name).'.php';
-        file_put_contents($file, $data['id']);
+        //dr_mkdirs($this->link_cache.'index_'.SITE_ID.'/');
+        //$file = $this->link_cache.'index_'.SITE_ID.'/'.md5($name).'.php';
+        //file_put_contents($file, $data['id']);
 
     }
 
+    // 储存词库地址
     public function save_tree($data) {
 
         if (!$data) {
@@ -99,6 +121,7 @@ class Tag extends \Phpcmf\Model
         } else {
             $treeArr = [];
         }
+
 
         $len = mb_strlen($data['name']);
         $str = '$treeArr[';
@@ -231,7 +254,7 @@ class Tag extends \Phpcmf\Model
     }
 
     // 内容自动存储到tag
-    public function auto_save_tag($data) {
+    public function auto_save_tag($data, $page = 0, $fzs = 0) {
 
         $tfield = \Phpcmf\Service::M('tag', 'tag')->tag_field(MOD_DIR);
 
@@ -244,14 +267,26 @@ class Tag extends \Phpcmf\Model
             return;
         }
 
+        $go = 0;
         $arr = explode(',', $tag);
+        if ($fzs && count($arr) > $fzs) {
+            // 分割开来入库
+            $chunks = array_chunk($arr, $fzs);
+            if (isset($chunks[$page])) {
+                $go = 1;
+                $arr = $chunks[$page];
+            } else {
+                return; // 没有了
+            }
+        }
+
         foreach ($arr as $t) {
             if ($t) {
                 $t = trim(dr_safe_replace($t));
                 $yq = $this->table($this->tablename)->where('name', $t)->getRow();
                 if ($yq) {
                     // 已经存在
-                    if (is_file(IS_USE_MODULE.'Models/Repair.php')) {
+                    if (!$fzs && is_file(IS_USE_MODULE.'Models/Repair.php')) {
                         $this->save_index($yq);
                     }
                     continue;
@@ -285,6 +320,10 @@ class Tag extends \Phpcmf\Model
                     }
                 }
             }
+        }
+
+        if ($fzs) {
+            return $go;
         }
 
         // 更新数据
@@ -550,6 +589,48 @@ class Tag extends \Phpcmf\Model
         return $txt;
     }
 
+    public function cfile($siteid, $name) {
+
+        if (!$name || !$siteid) {
+            return 0;
+        }
+
+        $tablename = $siteid.'_tag';
+        $yq = $this->table($tablename)->where('name', $name)->getRow();
+        if ($yq) {
+            // 已经存在
+            return 1;
+        } elseif ($this->check_name(0, $name)) {
+            return 0;
+        }
+        $py = \Phpcmf\Service::L('pinyin'); // 拼音转换类
+        $cname = $py->result($name);
+        $cname = str_replace(['\'', '"'], '', $cname);
+        $count = $this->db->table($tablename)->where('code', $cname)->countAllResults();
+        $code = $count ? $cname.$count : $cname;
+        if ($this->db->table($tablename)->where('code', $code)->countAllResults()) {
+            $code.= rand(0, 99999);
+        }
+        $pcode = $this->get_pcode(['pid' => 0, 'code' => $code]);
+        $save = array(
+            'pid' => 0,
+            'name' => $name,
+            'code' => $code,
+            'pcode' => $pcode,
+            'hits' => 0,
+            'iscfile' => 1,
+            'displayorder' => 0,
+            'childids' => '',
+            'content' => '',
+        );
+
+        $rt = $this->table($tablename)->insert($save);
+        if (!$rt['code']) {
+            return 0;
+        }
+        return 1;
+    }
+
     // 缓存
     public function cache($siteid = SITE_ID) {
 
@@ -559,6 +640,13 @@ class Tag extends \Phpcmf\Model
             $this->query_all(str_replace('{dbprefix}',  $this->prefix.$siteid.'_', $sql));
         }
 
+        // 创建字段 代码
+        if (!\Phpcmf\Service::M()->db->fieldExists('iscfile', $table)) {
+            \Phpcmf\Service::M('table')->add_field($table, 'iscfile', 'tinyint(1)', 'DEFAULT \'0\'', 'cfile');
+            \Phpcmf\Service::M()->query('UPDATE `' . $table . '` SET `iscfile` = 0');
+        }
+
+        /*
         $module = \Phpcmf\Service::L('cache')->get('module-'.SITE_ID.'-content');
         foreach ($module as $t) {
             $table = $this->dbprefix($siteid.'_tag_'.$t['dirname']);
@@ -573,7 +661,7 @@ class Tag extends \Phpcmf\Model
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='关键词库".$t['dirname']."索引表';";
                 $this->query_all(str_replace('{dbprefix}',  $this->prefix.$siteid.'_', $sql));
             }
-        }
+        }*/
 
 
         // 自定义字段

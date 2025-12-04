@@ -39,6 +39,8 @@ class Config extends \Phpcmf\Common
             $system['SYS_ADMIN_LOGIN_TIME'] = $post_system['SYS_ADMIN_LOGIN_TIME'];
             $system['SYS_ADMIN_LOGINS'] = $post_system['SYS_ADMIN_LOGINS'];
             $system['SYS_ADMIN_LOGIN_AES'] = $post_system['SYS_ADMIN_LOGIN_AES'];
+            $system['SYS_ADMIN_SMS_LOGIN'] = $post_system['SYS_ADMIN_SMS_LOGIN'];
+            $system['SYS_ADMIN_SMS_CHECK'] = $post_system['SYS_ADMIN_SMS_CHECK'];
             \Phpcmf\Service::M('System')->save_config($system, $system);
 
             $post = \Phpcmf\Service::L('input')->post('data');
@@ -49,10 +51,17 @@ class Config extends \Phpcmf\Common
             $member['config']['pwdlen'] = $post_member['config']['pwdlen'];
             $member['config']['user2pwd'] = $post_member['config']['user2pwd'];
             $member['config']['pwdpreg'] = $post_member['config']['pwdpreg'];
-            \Phpcmf\Service::M()->db->table('member_setting')->replace([
-                'name' => 'config',
-                'value' => dr_array2string($member['config'])
-            ]);
+            $row = \Phpcmf\Service::M()->table('member_setting')->where('name', 'config')->getRow();
+            if ($row) {
+                \Phpcmf\Service::M()->db->table('member_setting')->where('name', 'config')->update([
+                    'value' => dr_array2string($member['config'])
+                ]);
+            } else {
+                \Phpcmf\Service::M()->db->table('member_setting')->replace([
+                    'name' => 'config',
+                    'value' => dr_array2string($member['config'])
+                ]);
+            }
 
             $this->_json(1, dr_lang('操作成功'));
         }

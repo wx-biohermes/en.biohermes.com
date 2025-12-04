@@ -14,7 +14,7 @@ class Repair extends \Phpcmf\Model {
     private $category_field = [];
 
     // 获取栏目的自定义字段
-    public function get_category_field($cdir) {
+    public function get_category_field($cdir, $add = true) {
 
         if (isset($this->category_field[$cdir]) && $this->category_field[$cdir]) {
             return $this->category_field[$cdir];
@@ -32,45 +32,48 @@ class Repair extends \Phpcmf\Model {
                 $category_field[$f['fieldname']] = $f;
             }
         }
-        if (!isset($category_field['thumb'])) {
-            \Phpcmf\Service::M('module', 'module')->_add_field([
-                'name' => dr_lang('缩略图'),
-                'ismain' => 1,
-                'ismember' => 1,
-                'fieldtype' => 'File',
-                'fieldname' => 'thumb',
-                'setting' => array(
-                    'option' => array(
-                        'ext' => 'jpg,gif,png,jpeg',
-                        'size' => 10,
-                        'input' => 1,
-                        'attachment' => 0,
+
+        if ($add) {
+            if (!isset($category_field['thumb'])) {
+                \Phpcmf\Service::M('module', 'module')->_add_field([
+                    'name' => dr_lang('缩略图'),
+                    'ismain' => 1,
+                    'ismember' => 1,
+                    'fieldtype' => 'File',
+                    'fieldname' => 'thumb',
+                    'setting' => array(
+                        'option' => array(
+                            'ext' => 'jpg,gif,png,jpeg',
+                            'size' => 10,
+                            'input' => 1,
+                            'attachment' => 0,
+                        )
                     )
-                )
-            ], 1, 0, 'category-'.$cdir);
-        }
-        if (!APP_DIR && !isset($category_field['content'])) {
-            \Phpcmf\Service::M('module', 'module')->_add_field([
-                'name' => dr_lang('栏目内容'),
-                'ismain' => 1,
-                'fieldtype' => 'Ueditor',
-                'fieldname' => 'content',
-                'setting' => array(
-                    'option' =>
-                        array (
-                            'mode' => 1,
-                            'show_bottom_boot' => 1,
-                            'div2p' => 1,
-                            'width' => '100%',
-                            'height' => 400,
-                        ),
-                    'validate' =>
-                        array (
-                            'xss' => 1,
-                            'required' => 1,
-                        ),
-                ),
-            ], 1, 0, 'category-'.$cdir);
+                ], 1, 0, 'category-'.$cdir);
+            }
+            if (!APP_DIR && !isset($category_field['content'])) {
+                \Phpcmf\Service::M('module', 'module')->_add_field([
+                    'name' => dr_lang('栏目内容'),
+                    'ismain' => 1,
+                    'fieldtype' => 'Ueditor',
+                    'fieldname' => 'content',
+                    'setting' => array(
+                        'option' =>
+                            array (
+                                'mode' => 1,
+                                'show_bottom_boot' => 1,
+                                'div2p' => 1,
+                                'width' => '100%',
+                                'height' => 400,
+                            ),
+                        'validate' =>
+                            array (
+                                'xss' => 1,
+                                'required' => 1,
+                            ),
+                    ),
+                ], 1, 0, 'category-'.$cdir);
+            }
         }
 
         $this->category_field[$cdir] = $category_field;
@@ -137,7 +140,8 @@ class Repair extends \Phpcmf\Model {
         $cat['catids'] = explode(',', $cat['childids']);
         if (isset($this->modules[$cat['mid']]) && $this->modules[$cat['mid']]) {
             // 是内容模块
-            if (isset($this->modules[$cat['mid']]['setting']['pcatpost']) && $this->modules[$cat['mid']]['setting']['pcatpost']) {
+            if (isset($this->modules[$cat['mid']]['setting']['pcatpost'])
+                && $this->modules[$cat['mid']]['setting']['pcatpost']) {
                 // 允许父栏目发布
                 $cat['pcatpost'] = 1;
             }
@@ -208,6 +212,10 @@ class Repair extends \Phpcmf\Model {
         if ($cat['ismain']) {
             $this->cat_main[$cat['id']] = $this->cat_cache[$cat['id']];
         }
+        if (isset($cat['is_ctable'])) {
+            $this->cat_cache[$cat['id']]['is_ctable'] = (int)$cat['is_ctable'];
+        }
+
         \Phpcmf\Service::L('cache')->set_file($cat['id'], $cat, 'module/category-'.SITE_ID.'-'.$cache_dir.'-data');
         \Phpcmf\Service::L('cache')->set_file($cat['id'], $this->cat_cache[$cat['id']], 'module/category-'.SITE_ID.'-'.$cache_dir.'-min');
     }
@@ -249,7 +257,10 @@ class Repair extends \Phpcmf\Model {
 
         $dir = $mid ? $mid : (APP_DIR ? APP_DIR : 'share');
         if (!$this->categorys) {
-            $_data = $this->table(SITE_ID.'_'.$dir.'_category')->where('disabled', 0)->order_by('displayorder ASC,id ASC')->getAll();
+            $_data = $this->table(SITE_ID.'_'.$dir.'_category')
+                ->where('disabled', 0)
+                ->order_by('displayorder ASC,id ASC')
+                ->getAll();
             if (!$_data) {
                 return;
             }
@@ -305,7 +316,9 @@ class Repair extends \Phpcmf\Model {
     // 修复栏目数据格式分组存储
     public function repair_data($dirname, $psize) {
 
-        $_data = $this->table(SITE_ID.'_'.$dirname.'_category')->where('disabled', 0)->order_by('displayorder ASC,id ASC')->getAll();
+        $_data = $this->table(SITE_ID.'_'.$dirname.'_category')
+            ->where('disabled', 0)
+            ->order_by('displayorder ASC,id ASC')->getAll();
         if (!$_data) {
             return 0;
         }
@@ -343,7 +356,9 @@ class Repair extends \Phpcmf\Model {
     protected function _get_nextids($dirname, $catid) {
 
         $rt = [];
-        $data = $this->table(SITE_ID.'_'.$dirname.'_category')->where('pid='.$catid)->order_by('displayorder ASC,id ASC')->getAll();
+        $data = $this->table(SITE_ID.'_'.$dirname.'_category')
+            ->where('pid',$catid)
+            ->order_by('displayorder ASC,id ASC')->getAll();
         if ($data) {
             foreach($data as $cat) {
                 $rt[] = $cat['id'];
@@ -384,7 +399,11 @@ class Repair extends \Phpcmf\Model {
             return $childids;
         }
 
-        $data = $this->table(SITE_ID.'_'.$dirname.'_category')->where('pid>0 and id<>'.$catid.' and pid='.$catid)->getAll();
+        $data = $this->table(SITE_ID.'_'.$dirname.'_category')
+            ->where('pid>0')
+            ->where('id<>'.$catid)
+            ->where('pid', $catid)
+            ->getAll();
         if ($data) {
             foreach($data as $cat) {
                 $childids.= ','.$this->_get_childids($dirname, $cat['id'], ++$n);

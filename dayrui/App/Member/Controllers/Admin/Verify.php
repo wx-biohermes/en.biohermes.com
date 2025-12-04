@@ -117,8 +117,8 @@ class Verify extends \Phpcmf\Table
     public function index() {
 
         $p = [];
-        $name = \Phpcmf\Service::L('input')->request('field');
-        $value = \Phpcmf\Service::L('input')->request('keyword');
+        $name = dr_safe_replace(\Phpcmf\Service::L('input')->request('field'));
+        $value = dr_safe_replace(\Phpcmf\Service::L('input')->request('keyword'));
 
         $where = [
             \Phpcmf\Service::M()->dbprefix('member').'.`id` IN (select id from `'.\Phpcmf\Service::M()->dbprefix('member_data').'` where `is_verify`=0)',

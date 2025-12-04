@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Control\Api;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -111,5 +111,11 @@ class File extends \Phpcmf\Common
         \Phpcmf\Service::L('api')->down_img();
     }
 
+    /**
+     * 编辑器视频外链解析
+     */
+    public function video() {
+        \Phpcmf\Service::L('api')->video_link();
+    }
 
 }

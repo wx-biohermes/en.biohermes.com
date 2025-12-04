@@ -96,7 +96,7 @@ class Module_content extends \Phpcmf\Common
 
         if (!$fd) {
             $this->_json(0, dr_lang('待替换字段必须填写'));
-        } elseif (!$t1) {
+        } elseif (dr_is_empty($t1)) {
             $this->_json(0, dr_lang('被替换内容必须填写'));
         } elseif (!$tables) {
             $this->_json(0, dr_lang('表名称必须填写'));
@@ -288,7 +288,7 @@ class Module_content extends \Phpcmf\Common
                     $this->_json(0, dr_lang('存在非法SQL关键词：%s', $kw));
                 }
             }
-            $where = ' WHERE '.addslashes($t1);
+            $where = ' WHERE '.($t1);
         }
 
         if ($ms == 1) {
@@ -308,8 +308,8 @@ class Module_content extends \Phpcmf\Common
             if (!dr_in_array($fd, $fields)) {
                 $this->_json(0, dr_lang('表[%s]字段[%s]不存在', $table, $fd));
             }
-
-            \Phpcmf\Service::M()->db->query('UPDATE `'.$table.'` SET '.$replace . $where);
+            $sql = 'UPDATE `'.$table.'` SET '.$replace . $where;
+            \Phpcmf\Service::M()->db->query($sql);
             $count = \Phpcmf\Service::M()->db->affectedRows();
         }
 
@@ -1065,6 +1065,94 @@ class Module_content extends \Phpcmf\Common
             ),
         ]);
         \Phpcmf\Service::V()->display('module_content_cat.html');
+    }
+
+
+public function uid_edit() {
+
+        $mid = dr_safe_filename(\Phpcmf\Service::L('input')->get('mid'));
+        if (!$mid) {
+            $this->_html_msg(0, dr_lang('mid参数不能为空'));
+        }
+
+        $this->_module_init($mid);
+
+        $page = (int)\Phpcmf\Service::L('input')->get('page');
+        $psize = 100; // 每页处理的数量
+        $total = (int)\Phpcmf\Service::L('input')->get('total');
+        $table = $this->content_model->mytable;
+
+        $t1 = \Phpcmf\Service::L('input')->get('t1');
+        if (!$t1) {
+            $this->_html_msg(0, dr_lang('原账号必须填写'));
+        }
+
+        $t1_user = dr_member_username_info($t1);
+        if (!$t1_user) {
+            $this->_html_msg(0, dr_lang('原账号%s不存在', $t1));
+        }
+
+        $t2 = \Phpcmf\Service::L('input')->get('t2');
+        if (!$t2) {
+            $this->_html_msg(0, dr_lang('变更后的账号必须填写'));
+        }
+        $t2_user = dr_member_username_info($t2);
+        if (!$t2_user) {
+            $this->_html_msg(0, dr_lang('变更后的账号%s不存在', $t2));
+        }
+
+        $url = dr_url(APP_DIR.'/'.'module_content/'.\Phpcmf\Service::L('Router')->method, ['mid' => $mid]);
+        $url.= '&t1='.$t1;
+        $url.= '&t2='.$t2;
+        $where = [
+            'uid' => $t1_user['uid'],
+        ];
+       
+        $sql = \Phpcmf\Service::L('input')->get('sql', true);
+        if ($sql) {
+            // 防范sql注入后期需要加强
+            foreach (['outfile', 'dumpfile', '.php', 'union', ';'] as $kw) {
+                if (strpos(strtolower($sql), $kw) !== false) {
+                    $this->_html_msg(0, dr_lang('存在非法SQL关键词：%s', $kw));
+                }
+            }
+            $where[] = addslashes($sql);
+            $url.= '&sql='.$sql;
+        }
+
+        $where = implode(' AND ', $where);
+
+        if (!$page) {
+            // 计算数量
+            $this->_html_msg(1, dr_lang('正在执行中...'), $url.'&total='.$total.'&page='.($page+1));
+        }
+
+
+        $table = \Phpcmf\Service::M()->dbprefix($table);
+        $sql = 'update '.$table.'_index set uid='.$t2_user['id'].' where '.$where;
+        \Phpcmf\Service::M()->query($sql);
+        $sql = 'update '.$table.' set author="'.($t2_user['name'] ? $t2_user['name'] : $t2_user['usernamme']).'", uid='.$t2_user['id'].' where '.$where;
+        \Phpcmf\Service::M()->query($sql);
+
+        $sql = 'update '.$table.'_data_0 set uid='.$t2_user['id'].' where '.$where;
+        \Phpcmf\Service::M()->query($sql);
+
+
+        $this->_html_msg(1, dr_lang('更新完成'));
+    }
+    public function uid_index() {
+
+        $mid = dr_safe_filename(\Phpcmf\Service::L('input')->get('mid'));
+        if (!$mid) {
+            $this->_html_msg(0, dr_lang('mid参数不能为空'));
+        }
+
+        $this->_module_init($mid);
+
+        \Phpcmf\Service::V()->assign([
+            'todo_url' => dr_url(APP_DIR.'/'.'module_content/uid_edit', ['mid' => $mid]),
+        ]);
+        \Phpcmf\Service::V()->display('module_content_uid.html');
     }
 
 }

@@ -251,7 +251,7 @@
 
 
                         {loop $my_menu $tid $top}
-                        <div class="menu-item menu-accordion" id="dr_menu_top_{$top.id}">
+                        <div class="menu-item menu-accordion dr_menu_top" id="dr_menu_top_{$top.id}">
                             <div class="menu-content pt-4 pb-0">
                                 <span class="menu-section text-muted text-uppercase fs-8 ls-1">{dr_lang($top.name)}</span>
                             </div>
@@ -266,7 +266,7 @@
                                 <span class="menu-title">{dr_lang($left.name)}</span>
                                 <span class="menu-arrow"></span>
                             </span>
-                            <div class="menu-sub menu-sub-accordion menu-active-bg">
+                            <div class="menu-sub menu-sub-accordion menu-active-bg dr_menu_link">
                                 {loop $left.link $link}
                                 <div class="menu-item">
                                     <a class="menu-link {if $main_menu.id==$link.id} active{/if}" id="dr_menu_link_a_{$link.id}" href="javascript:Mlink({$tid}, {$left['id']}, {$link['id']}, '{$link.url}');">

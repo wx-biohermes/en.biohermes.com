@@ -7,7 +7,7 @@
 <div class="right-card-box">
 <form class="form-horizontal myfbody" role="form" id="myform">
     {$form}
-    <div class="table-scrollable">
+    <div class="">
         <table class="table table-noborder table-striped table-bordered table-hover table-checkable dataTable">
             <thead>
             <tr class="heading">
@@ -15,6 +15,7 @@
                 <th width="250"> {dr_lang('名称')} </th>
                 <th width="180"> <a href="{dr_url('api/icon')}" target="_blank"><i class="fa fa-arrow-right fa-fw" /></i>  {dr_lang('图标')} </a></th>
                 <th> {dr_lang('后台角色使用权限')}</th>
+                <th> {dr_lang('后台栏目使用权限')}</th>
             </tr>
             </thead>
             <tbody>
@@ -35,6 +36,11 @@
                         </select>
                     </label>
                 </td>
+                <td style="overflow: inherit;">
+                    <label style="min-width: 200px">
+                        {php echo \Phpcmf\Service::L('category', 'module')->select($mid, $t['cat'], 'name=\'cat['.$i.'][]\' multiple style=\'width:370px;height:400px\'', '');}
+                    </label>
+                </td>
             </tr>
             {/loop}
             {php $i++;}
@@ -43,9 +49,8 @@
                 <td><input class="form-control" name="flag[{$i}][name]" type="text" value="" placeholder="{dr_lang('新增推荐位')}"></td>
                 <td><input class="form-control" type="text" name="flag[{$i}][icon]" value="" placeholder="{dr_lang('fa fa-user')}" />
                 </td>
-                <td>
-
-                </td>
+                <td><span class="badge badge-danger badge-roundless">{dr_lang('新增后再分配')}</span></td>
+                <td><span class="badge badge-danger badge-roundless">{dr_lang('新增后再分配')}</span></td>
             </tr>
             </tbody>
         </table>

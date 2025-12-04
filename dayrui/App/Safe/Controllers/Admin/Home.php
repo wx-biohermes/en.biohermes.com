@@ -76,6 +76,7 @@ class Home extends \Phpcmf\App
                     $this->_is_ok($id, 0);
                     $this->_json(0, '将/dayrui/目录转移到Web目录之外的目录，可以防止核心程序不被Web读取');
                 }
+                $this->_is_ok($id);
                 break;
 
 

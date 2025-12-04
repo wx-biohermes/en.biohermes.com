@@ -23,7 +23,7 @@ return [
           `author` varchar(50) NOT NULL COMMENT '笔名',
           `status` tinyint(2) NOT NULL COMMENT '状态(已废弃)',
           `url` varchar(255) DEFAULT NULL COMMENT '地址',
-          `link_id` int(10) NOT NULL DEFAULT '0' COMMENT '同步id',
+          `link_id` int(10) DEFAULT NULL DEFAULT '0' COMMENT '同步id',
           `tableid` smallint(5) unsigned NOT NULL COMMENT '附表id',
           `inputip` varchar(200) DEFAULT NULL COMMENT '录入者ip',
           `inputtime` int(10) unsigned NOT NULL COMMENT '录入时间',
@@ -84,7 +84,7 @@ return [
                                 ),
                         ),
                     'displayorder' => '0',
-                    'textname' => '主题',
+                    'textname' => dr_lang('标题'),
                 ),
             1 =>
                 array (
@@ -110,7 +110,7 @@ return [
                                 ),
                         ),
                     'displayorder' => '0',
-                    'textname' => '缩略图',
+                    'textname' => dr_lang('缩略图'),
                 ),
             2 =>
                 array (
@@ -139,7 +139,7 @@ return [
                                 ),
                         ),
                     'displayorder' => '0',
-                    'textname' => '关键字',
+                    'textname' => dr_lang('关键字'),
                 ),
             3 =>
                 array (
@@ -169,7 +169,7 @@ return [
                                 ),
                         ),
                     'displayorder' => '0',
-                    'textname' => '描述',
+                    'textname' => dr_lang('描述'),
                 ),
             4 =>
                 array (
@@ -198,7 +198,7 @@ return [
                                 ),
                         ),
                     'displayorder' => '0',
-                    'textname' => '笔名',
+                    'textname' => dr_lang('笔名'),
                 ),
         ),
         
@@ -231,7 +231,7 @@ return [
                                 ),
                         ),
                     'displayorder' => '0',
-                    'textname' => '内容',
+                    'textname' => dr_lang('内容'),
                 ),
         ),
         

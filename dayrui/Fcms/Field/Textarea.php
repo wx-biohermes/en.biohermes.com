@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Field;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -64,7 +64,7 @@ class Textarea extends \Phpcmf\Library\A_Field {
         <div class="portlet  bordered light">
         <div class="portlet-body">
         <div class="scroller" style="width:'.(\Phpcmf\Service::IS_MOBILE_USER() ? '100%' : ($field['setting']['option']['width'] ? ($field['setting']['option']['width'].(is_numeric($field['setting']['option']['width']) ? 'px' : '')) : '400px')).';height:'.($field['setting']['option']['height'] ? $field['setting']['option']['height'] : '100').'px" data-always-visible="1" data-rail-visible="1">
-        '.nl2br(htmlentities((string)$value)).'                
+        '.nl2br(htmlspecialchars_decode((string)$value)).'                
         </div>
         </div>
         </div>';

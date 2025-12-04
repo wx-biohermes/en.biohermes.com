@@ -22,3 +22,12 @@
 
     return false; // 表示可以执行下面的钩子
 });
+
+function dr_tag_count($mid, $name) {
+    $file = WRITEPATH.'tags/index_'.SITE_ID.'/'.$mid.'-'.md5($name).'.php';
+    if (is_file($file)) {
+        $code = file_get_contents($file);
+        return substr_count($code, ',')+1;
+    }
+    return 0;
+}

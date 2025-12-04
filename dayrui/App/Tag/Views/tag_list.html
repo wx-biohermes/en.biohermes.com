@@ -9,18 +9,21 @@
             <ul class="dropdown-menu" role="menu">
                 {cache name=module-content}
                 <li>
-                    <a {if $is_open_page}href="{dr_url('tag/home/url_add')}&mid={$t.dirname}" target="_blank"{else}href="javascript:dr_iframe_show('{dr_lang('一键提取词语')}', '{dr_url('tag/home/url_add')}&mid={$t.dirname}', '500px', '300px');"{/if}>{$t.name}</a>
+                    <a {if $is_open_page}href="{dr_url('tag/home/url_add')}&mid={$t.dirname}" target="_blank"{else}href="javascript:dr_iframe_show('{dr_lang('提取词语')}', '{dr_url('tag/home/url_add')}&mid={$t.dirname}', '500px', '300px');"{/if}>{$t.name}</a>
                 </li>
                 {/cache}
             </ul>
         </div>
 
         <label>
-            <a class="btn yellow btn-sm" {if $is_open_page}href="{dr_url('tag/home/url_edit')}" target="_blank"{else}href="javascript:dr_iframe_show('{dr_lang('一键更新词库地址')}', '{dr_url('tag/home/url_edit')}', '500px', '300px');"{/if}>{dr_lang('一键更新词库地址')}</a>
+            <a class="btn yellow btn-sm" {if $is_open_page}href="{dr_url('tag/home/url_edit')}" target="_blank"{else}href="javascript:dr_iframe_show('{dr_lang('更新词库地址')}', '{dr_url('tag/home/url_edit')}', '500px', '300px');"{/if}>{dr_lang('一键更新词库地址')}</a>
         </label>
         {if is_file(IS_USE_MODULE.'Models/Repair.php')}
         <label>
-            <a class="btn green btn-sm" {if $is_open_page}href="{dr_url('tag/home/index_edit')}" target="_blank"{else}href="javascript:dr_iframe_show('{dr_lang('一键生成词库索引')}', '{dr_url('tag/home/index_edit')}', '500px', '300px');"{/if}>{dr_lang('一键生成词库索引')}</a>
+            <a class="btn green btn-sm" {if $is_open_page}href="{dr_url('tag/home/index_edit')}" target="_blank"{else}href="javascript:dr_iframe_show('{dr_lang('生成全部索引')}', '{dr_url('tag/home/index_edit')}', '500px', '300px');"{/if}>{dr_lang('一键生成全部索引')}</a>
+        </label>
+        <label>
+            <a class="btn yellow btn-sm" {if $is_open_page}href="{dr_url('tag/home/index2_edit')}" target="_blank"{else}href="javascript:dr_iframe_show('{dr_lang('生成补录索引')}', '{dr_url('tag/home/index2_edit')}', '500px', '300px');"{/if}>{dr_lang('生成补录索引')}</a>
         </label>
         <label>
             <a class="btn red btn-sm" href="javascript:dr_ajax_url('{dr_url('tag/home/clear_edit')}');">{dr_lang('清空词库索引')}</a>
@@ -121,13 +124,11 @@
                         <ul class="dropdown-menu" role="menu">
                             {loop $return_s $s}
                             {php $tb='tag_'.$s['dirname'];}
-                            <li>
-                                <a href="javascript:dr_iframe_show('{$t.name} - {$s.name}', '{dr_url('tag/home/module_index', ['mid'=>$s.dirname, 'tid'=>$t.id])}');">{$s.name}（{count action=table table_site=$tb tid=$t.id}） </a>
-                            </li>
+                            <li>{$s.name}（{dr_tag_count($s.dirname, $t.name)}） </li>
                             {/loop}
                         </ul>
                     </div>
-                    <div class="btn-group" style="margin-top: 2px; margin-left: 90px">
+                    <div class="btn-group" style="margin-top: 2px; margin-left: 90px;display: none">
                         <button class="btn btn-xs green dropdown-toggle" type="button" data-hover="dropdown" data-toggle="dropdown" aria-expanded="false"> 关联内容
                             <i class="fa fa-angle-down"></i>
                         </button>
@@ -143,14 +144,12 @@
                     {else}
                     {loop $return_s $s}
                     {php $tb='tag_'.$s['dirname'];}
-                    <label>
-                        <a class="btn btn-xs blue" href="javascript:dr_iframe_show('{$t.name} - {$s.name}', '{dr_url('tag/home/module_index', ['mid'=>$s.dirname, 'tid'=>$t.id])}');">{$s.name}（{count action=table table_site=$tb tid=$t.id}） </a>
-                    </label>
+                    <label>{$s.name}（{dr_tag_count($s.dirname, $t.name)}）</label>
                     {/loop}
 
                     {loop $return_s $s}
                     {php $tb='tag_'.$s['dirname'];}
-                    <label>
+                    <label style="display: none">
                         <a class="btn btn-xs green" href="javascript:dr_add_related('{$t.name} - {$s.name}', '{$rurl}&module={$s.dirname}', '{dr_url('tag/home/module_index', ['mid'=>$s.dirname, 'tid'=>$t.id])}');">添加{$s.name}</a>
                     </label>
                     {/loop}

@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Model;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -94,10 +94,12 @@ class Cache extends \Phpcmf\Model {
         \Phpcmf\Hooks::trigger('update_cache');
 
         if (!$this->is_sync_cache) {
+            $this->site_cache = $this->table('site')->where('disabled', 0)->getAll();
             if (dr_is_use_module()) {
-                $this->site_cache = $this->table('site')->where('disabled', 0)->getAll();
                 $this->module_cache = $this->table('module')->order_by('displayorder ASC,id ASC')->getAll();
                 \Phpcmf\Service::M('site', 'module')->cache(0, $this->site_cache, $this->module_cache);
+            } else {
+                \Phpcmf\Service::M('site')->cache(0, $this->site_cache);
             }
         }
 
@@ -165,8 +167,8 @@ class Cache extends \Phpcmf\Model {
                     $_cache && $app_cache[$dir] = $_cache;
                 }
             }
-            dr_dir_delete(WRITEPATH.'data');
-            foreach (['auth', 'email', 'member', 'attachment', 'system'] as $m) {
+            //dr_dir_delete(WRITEPATH.'data');
+            foreach (['auth', 'email', 'member', 'attachment', 'system', 'site'] as $m) {
                 \Phpcmf\Service::M($m)->cache();
             }
             // 自定义缓存
@@ -196,6 +198,8 @@ class Cache extends \Phpcmf\Model {
 
         \Phpcmf\Hooks::trigger('update_cache');
 
+        dr_dir_delete(WRITEPATH.'tree');
+
         if (dr_is_use_module()) {
             if (is_file(IS_USE_MODULE.'Models/Site.php')) {
                 \Phpcmf\Service::M('site', 'module')->update_cache();
@@ -204,7 +208,7 @@ class Cache extends \Phpcmf\Model {
             }
         } else {
             // 全局缓存
-            foreach (['auth', 'email', 'member', 'attachment', 'system'] as $m) {
+            foreach (['auth', 'email', 'member', 'attachment', 'system', 'site'] as $m) {
                 \Phpcmf\Service::M($m)->cache();
             }
 
@@ -226,6 +230,20 @@ class Cache extends \Phpcmf\Model {
                     $_cache && $app_cache[$dir] = $_cache;
                 }
             }
+            // 插件缓存
+            $apps = [];
+            if ($app_cache) {
+                foreach ($app_cache as $namespace => $c) {
+                    \Phpcmf\Service::C()->init_file($namespace);
+                    foreach ($c as $i => $apt) {
+                        $class = is_numeric($i) ? $apt : $i;
+                        $apps[] = '['.$namespace.'-'.$class.']';
+                        \Phpcmf\Service::M($class, $namespace)->cache(1);
+                    }
+                }
+            }
+            // 记录日志
+            CI_DEBUG && \Phpcmf\Service::L('input')->system_log('更新缓存：'.implode(' - ', $apps));
 
             \Phpcmf\Service::M('table')->cache(1, []);
             \Phpcmf\Service::M('menu')->cache();
@@ -357,22 +375,30 @@ class Cache extends \Phpcmf\Model {
     }
 
     public function update_search_index() {
-        \Phpcmf\Service::M('site', 'module')->update_search_index();
+        if (IS_USE_MODULE) {
+            \Phpcmf\Service::M('site', 'module')->update_search_index();
+        }
     }
 
     // 重建子站配置文件
     public function update_site_config() {
-        \Phpcmf\Service::M('site', 'module')->update_site_config();
+        if (IS_USE_MODULE) {
+            \Phpcmf\Service::M('site', 'module')->update_site_config();
+        }
     }
 
     // 生成目录式手机目录
     public function update_mobile_webpath($path, $dirname) {
-        \Phpcmf\Service::M('site', 'module')->update_mobile_webpath($path, $dirname);
+        if (IS_USE_MODULE) {
+            \Phpcmf\Service::M('site', 'module')->update_mobile_webpath($path, $dirname);
+        }
     }
 
     // 更新项目
     public function update_webpath($name, $path, $value, $root = TEMPPATH) {
-        \Phpcmf\Service::M('site', 'module')->update_webpath($name, $path, $value, $root);
+        if (IS_USE_MODULE) {
+            \Phpcmf\Service::M('site', 'module')->update_webpath($name, $path, $value, $root);
+        }
     }
 
     // 错误输出

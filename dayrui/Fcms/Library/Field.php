@@ -17,6 +17,7 @@
         public $value; // 默认值
         public $fields; // 可用字段
         public $merge; // 可用merge字段
+        public $post_temp_data; // post临时储存数据，post后失效
 
         private $is_hide_merge_group = 0;
         private $app;
@@ -34,7 +35,29 @@
             return $this;
         }
 
-        // 格式化字段输入表单
+        /**
+         * 获取post临时数据
+         */
+        public function get_post_temp_data($name) {
+            if (!isset($this->post_temp_data[$name])) {
+                return [];
+            }
+            return $this->post_temp_data[$name];
+        }
+
+        /**
+         * 设置post临时数据
+         */
+        public function set_post_temp_data($name, $value) {
+            if (!isset($this->post_temp_data[$name])) {
+                $this->post_temp_data[$name] = [];
+            }
+            $this->post_temp_data[$name][] = $value;
+        }
+
+        /**
+         * 格式化字段输入表单
+         */
         public function get_field_format() {
 
             if ($this->format) {
@@ -55,8 +78,8 @@
             if (!$this->format) {
                 $this->format = '
 <div class="form-group" id="dr_row_{name}">
-    <label class="control-label col-md-2">{text}</label>
-    <div class="col-md-10">{value}</div>
+    <label class="control-label col-md-2" id="dr_row_name_{name}">{text}</label>
+    <div class="col-md-10" id="dr_row_input_{name}">{value}</div>
 </div>';
             }
 
@@ -85,6 +108,7 @@
             $mygroup = $mymerge = $merge = $group = [];
             $this->value = $data;
             $this->fields = $field;
+            $this->post_temp_data = [];
 
             if (!$this->is_hide_merge_group) {
                 // 分组字段筛选
@@ -381,7 +405,8 @@
                     'ismember' => 1,
                     'fieldtype' => 'Text',
                     'fieldname' => 'id',
-                    'setting' => array()
+                    'setting' => array(),
+                    'displayorder' => 0
                 ),
                 'content' => array(
                     'name' => dr_lang('内容'),
@@ -389,7 +414,8 @@
                     'ismember' => 1,
                     'fieldtype' => 'Text',
                     'fieldname' => 'content',
-                    'setting' => array()
+                    'setting' => array(),
+                    'displayorder' => 0
                 ),
                 'title' => array(
                     'name' => dr_lang('主题'),
@@ -397,7 +423,8 @@
                     'ismember' => 1,
                     'fieldtype' => 'Text',
                     'fieldname' => 'title',
-                    'setting' => array()
+                    'setting' => array(),
+                    'displayorder' => 0
                 ),
                 'thumb' => array(
                     'name' => dr_lang('缩略图'),
@@ -411,7 +438,8 @@
                             'size' => 10,
                             'input' => 1,
                         )
-                    )
+                    ),
+                    'displayorder' => 0
                 ),
                 'catid' => array(
                     'name' => dr_lang('栏目'),
@@ -419,7 +447,8 @@
                     'ismember' => 1,
                     'fieldtype' => 'Text',
                     'fieldname' => 'catid',
-                    'setting' => array()
+                    'setting' => array(),
+                    'displayorder' => 0
                 ),
                 'uid' => array(
                     'name' => dr_lang('账号'),
@@ -434,7 +463,8 @@
                         'validate' => array(
                             'check' => '_check_member',
                         )
-                    )
+                    ),
+                    'displayorder' => 0
                 ),
                 'inputtime' => array(
                     'name' => dr_lang('录入时间'),
@@ -451,7 +481,8 @@
                         'validate' => array(
                             'required' => 1,
                         )
-                    )
+                    ),
+                    'displayorder' => 0
                 ),
                 'updatetime' => array(
                     'name' => dr_lang('更新时间'),
@@ -468,7 +499,8 @@
                         'validate' => array(
                             'required' => 1,
                         )
-                    )
+                    ),
+                    'displayorder' => 0
                 ),
                 'inputip' => array(
                     'name' => dr_lang('客户端IP'),
@@ -484,7 +516,8 @@
                             'func' => 'dr_show_ip',
                             'value' => \Phpcmf\Service::L('input')->ip_info()
                         )
-                    )
+                    ),
+                    'displayorder' => 0
                 ),
                 'displayorder' => array(
                     'name' => dr_lang('排列值'),
@@ -501,7 +534,8 @@
                             'show' => '1',
                             'value' => 0
                         )
-                    )
+                    ),
+                    'displayorder' => 0
                 ),
                 'hits' => array(
                     'name' => dr_lang('浏览数'),
@@ -518,7 +552,8 @@
                             'show' => '1',
                             'value' => 1
                         )
-                    )
+                    ),
+                    'displayorder' => 0
                 ),
                 'status' => array(
                     'name' => dr_lang('审核状态'),
@@ -528,10 +563,11 @@
                     'fieldname' => 'status',
                     'setting' => array(
                         'option' => array(
-                            'options' => '待审核|0'.PHP_EOL.'已通过|1'.PHP_EOL.'未通过|2',
+                            'options' => dr_lang('待审核').'|0'.PHP_EOL.dr_lang('已通过').'|1'.PHP_EOL.dr_lang('未通过').'|2',
                             'value' => 1
                         )
-                    )
+                    ),
+                    'displayorder' => 0
                 ),
             ];
 
@@ -567,9 +603,11 @@
             $name = ucfirst(strtolower($name));
             if (!isset($this->objects[$name])) {
                 $class = '';
-                if (is_file(MYPATH.'Field/'.$name.'.php')) {
+                $file1 = MYPATH.'Field/'.$name.'.php';
+                $file2 = CMSPATH.'Field/'.$name.'.php';
+                if (is_file($file1)) {
                     $class = '\\My\\Field\\'.$name; // my目录继承类别
-                } elseif (is_file(CMSPATH.'Field/'.$name.'.php')) {
+                } elseif (is_file($file2)) {
                     $class = '\\Phpcmf\\Field\\'.$name; // 系统类别
                 } else {
                     if ($name == 'Ueditor') {
@@ -587,7 +625,7 @@
                             log_message('error', '字段类别['.$name.']所属插件['.$app.']未安装');
                             return;
                         } elseif (!$app) {
-                            log_message('error', '字段类别['.$name.']不存在');
+                            log_message('error', '字段类别['.$name.']不存在-'.$file1.'-'.$file2);
                             return;
                         }
                         $file = dr_get_app_dir($app).'Fields/'.ucfirst($fname).'.php';
@@ -595,7 +633,7 @@
                             $class = '\\My\\Field\\'.$app.'\\'.ucfirst($fname);
                             require $file;
                         } else {
-                            log_message('error', '字段类别['.$name.']所属插件['.$app.']的字段文件不存在');
+                            log_message('error', '字段类别['.$name.']所属插件['.$app.']的字段文件不存在-'.$file.'-'.$file1.'-'.$file2);
                             return;
                         }
                     }
@@ -683,6 +721,10 @@
                 } elseif (isset($t['namespace']) && $t['namespace'] && $t['namespace'] != $this->app) {
                     unset($type[$i]);
                 }
+                $type[$i]['id'] = $t['id'];
+                $type[$i]['used'] = $t['used'];
+                $type[$i]['name'] = dr_lang($t['name']);
+                $type[$i]['namespace'] = $t['namespace'];
             }
             // 扫描没有定义的字段类别
             $path = dr_file_map(MYPATH.'Field');
@@ -693,7 +735,7 @@
                         && strpos(file_get_contents(MYPATH.'Field/'.$file), '<?php namespace My\Field;') !== false) {
                         $type[] = [
                             'id' => $name,
-                            'name' => $name,
+                            'name' => dr_lang($name),
                             'used' => '',
                             'namespace' => '',
                         ];

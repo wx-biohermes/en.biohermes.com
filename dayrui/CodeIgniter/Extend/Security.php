@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Extend;
 /**
- * https://www.junke158.cn
- * 君科云CMS
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -60,8 +60,8 @@ class Security extends \CodeIgniter\Security\Security {
 
         // Do the tokens match?
         if (! isset($token, $this->hash) || ! hash_equals($this->hash, $token)) {
-            SYS_DEBUG && log_message('debug', 'CSRF验证拦截（'.$this->hash.' / '.$token.'）');
-            dr_exit_msg(0, 'CSRF验证超时请重试', '', [
+            SYS_DEBUG && log_message('debug', 'CSRF验证拦截（系统码'.$this->hash.' / 提交码'.$token.'）');
+            dr_exit_msg(0, 'CSRF验证拦截', '', [
                 'name' => $this->tokenName,
                 'value' => $this->hash
             ]);
@@ -92,6 +92,8 @@ class Security extends \CodeIgniter\Security\Security {
         }
 
         $this->generateHash();
+
+        SYS_DEBUG && log_message('debug', 'CSRF验证生成新系统码（'.$this->hash.'）');
     }
 
 }

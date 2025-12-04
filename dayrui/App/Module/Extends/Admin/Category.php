@@ -202,7 +202,7 @@ class Category extends \Phpcmf\Table {
             foreach ($this->cat_config[$this->module['dirname']]['list_field'] as $i => $t) {
                 if ($t['use']) {
                     $head.= '<th '.($t['width'] ? ' width="'.$t['width'].'"' : '').' '.($t['center'] ? ' class=\"table-center\" style="text-align:center"' : '').'>'.dr_lang($t['name']).'</th>';
-                    $list.= '<td '.($t['center'] ? ' class=\"table-center\"' : '').'>$'.$i.'_html</td>';
+                    $list.= '<td '.($t['center'] ? ' class=\"table-center\" style="text-align:center"' : '').'>$'.$i.'_html</td>';
                 }
             }
         }
@@ -228,6 +228,7 @@ class Category extends \Phpcmf\Table {
             } else {
                 $t['name'] = dr_strcut($t['name']);
             }
+            $t['jsname'] = str_replace(['\'', '"'], [], $t['name']);
             $t['setting'] = dr_string2array($t['setting']);
             $t['pcatpost'] = 0;
             $pid = explode(',', $t['pids']);
@@ -276,7 +277,10 @@ class Category extends \Phpcmf\Table {
                 // 共享栏目时变量查询有多少个模块目录
                 if ($this->module['share'] && $t['childids']) {
                     $cdata = \Phpcmf\Service::M()->table($this->init['table'])
-                        ->where('mid<>"" and id<>'.$t['id'].' and id in('.$t['childids'].')')->getAll();
+                        ->where('mid<>""')
+                        ->where('id<>'.$t['id'])
+                        ->where_in('id', $t['childids'])
+                        ->getAll();
                     if ($cdata) {
                         $mids = [$t['mid']];
                         foreach($cdata as $c) {
@@ -291,13 +295,13 @@ class Category extends \Phpcmf\Table {
                 $tcats[] = $t['id'].'-'.$mids;
             }
             if ($this->_is_admin_auth('edit') && dr_count($this->init['field']) && ($t['tid'] !=2 && $this->is_scategory)) {
-                $option.= '<a class="btn btn-xs dark" href="javascript:dr_content_url('.$t['id'].', \''.$t['name'].'\')"> <i class="fa fa-edit"></i> '.dr_lang('编辑内容').'</a>';
+                $option.= '<a class="btn btn-xs dark" href="javascript:dr_content_url('.$t['id'].', \''.$t['jsname'].'\')"> <i class="fa fa-edit"></i> '.dr_lang('编辑内容').'</a>';
             } elseif ($this->_is_admin_auth('edit') && ($t['tid'] == 2 && $this->is_scategory)) {
-                $option.= '<a class="btn btn-xs dark" href="javascript:dr_link_url('.$t['id'].', \''.$t['name'].'\');"> <i class="fa fa-edit"></i> '.dr_lang('编辑地址').'</a>';
+                $option.= '<a class="btn btn-xs dark" href="javascript:dr_link_url('.$t['id'].', \''.$t['jsname'].'\');"> <i class="fa fa-edit"></i> '.dr_lang('编辑地址').'</a>';
             }
             // 只对超管有效
             if ($t['ismain'] && isset($this->admin['role'][1]) && dr_count($this->init['field'])) {
-                $option.= '<a class="btn btn-xs red" href="javascript:dr_cat_field('.$t['id'].', \''.$t['name'].'\');"> <i class="fa fa-code"></i> '.dr_lang('字段权限').'</a>';
+                $option.= '<a class="btn btn-xs red" href="javascript:dr_cat_field('.$t['id'].', \''.$t['jsname'].'\');"> <i class="fa fa-code"></i> '.dr_lang('字段权限').'</a>';
             }
             // 第三方插件接入
             if ($is_cat_code) {
@@ -382,6 +386,7 @@ class Category extends \Phpcmf\Table {
                 }
             }
             extract($t);
+            $list  = str_replace('"', '\'', $list);
             eval("\$nstr = \"$list\";");
             $tree.= $nstr;
         }
@@ -591,6 +596,100 @@ class Category extends \Phpcmf\Table {
             $this->_html_msg(1, dr_lang('字段更新完成'));
             exit;
 
+        } elseif ($at == 'close') {
+
+            // 开启独立分表
+            $cat = \Phpcmf\Service::M('category')->init($this->init)->get($id);
+            if (!$cat) {
+                $this->_json(0, dr_lang('栏目数据不存在'));
+            }
+
+            if (!$this->module['share']) {
+                $cat['mid'] = APP_DIR;
+            }
+            if (!$cat['mid']) {
+                $this->_json(0, dr_lang('栏目所属模块不存在'));
+            }
+
+            $arr = explode(',', $cat['childids']);
+            if ($arr) {
+                foreach ($arr as $a) {
+                    $c = dr_cat_value($cat['mid'], $a);
+                    if ($c && $c['mid'] && $c['mid'] != $cat['mid']) {
+                        $this->_json(0, dr_lang('栏目[%s]所属模块是[%s]，与顶级栏目所属模块不同，不能启用分表', $c['name'], $c['mid']));
+                    }
+                }
+            }
+
+            $ids = (\Phpcmf\Service::L('input')->get('ids'));
+            $url = dr_url(APP_DIR.'/category/table_add', ['at' => 'close', 'id' => $id, 'ids' => $ids]);
+            $page = (int)\Phpcmf\Service::L('input')->get('page');
+
+            $table = SITE_ID.'_'.$cat['mid'].'_c'.$cat['id'];
+
+            $psize = 200; // 每页处理的数量
+            $total = (int)\Phpcmf\Service::L('input')->get('total');
+            if (!$page) {
+                // 统计数量
+                if (\Phpcmf\Service::M()->db->tableExists(\Phpcmf\Service::M()->dbprefix($table))) {
+                    $total = \Phpcmf\Service::M()->table($table)->counts();
+                } else {
+                    $total = 0;
+                }
+                if (!$total) {
+                    if ($ids) {
+                        $arr = explode(',', $ids);
+                        foreach ($arr as $key => $c) {
+                            if ($c == $id) {
+                                // 找到了
+                                if (isset($arr[$key+1])) {
+                                    $url = dr_url(APP_DIR.'/category/table_add', ['at' => 'close', 'id' => $arr[$key+1], 'ids' => $ids]);
+                                    $this->_html_msg(1, dr_lang('[%s]正在执行中...', $cat['name']), $url);
+                                }
+                            }
+                        }
+                    }
+                    $this->_html_msg(0, dr_lang('分表中没有数据'));
+                }
+
+                //\Phpcmf\Service::M('category')->init($this->init)->update($id, ['is_ctable' => 1]);
+
+                $this->_html_msg(1, dr_lang('[%s]正在执行中...', $cat['name']), $url.'&total='.$total.'&page='.($page+1));
+            }
+
+            $tpage = ceil($total / $psize); // 总页数
+
+            // 更新完成
+            if ($page > $tpage) {
+                if ($ids) {
+                    $arr = explode(',', $ids);
+                    foreach ($arr as $key => $c) {
+                        if ($c == $id) {
+                            // 找到了
+                            if (isset($arr[$key+1])) {
+                                $url = dr_url(APP_DIR.'/category/table_add', ['at' => 'close', 'id' => $arr[$key+1], 'ids' => $ids]);
+                                $this->_html_msg(1, dr_lang('[%s]正在执行中...', $cat['name']), $url);
+                            }
+                        }
+                    }
+                }
+                \Phpcmf\Service::M('cache')->update_data_cache();
+                $this->_html_msg(1, dr_lang('[%s]数据处理完成（%s）', $cat['name'], $total));
+            }
+
+            $data = \Phpcmf\Service::M()->db->table($table)->limit($psize, $psize * ($page - 1))->orderBy('id DESC')->get()->getResultArray();
+            if ($data) {
+                foreach ($data as $t) {
+                    $rt = \Phpcmf\Service::M()->table(SITE_ID.'_'.$cat['mid'])->replace($t);
+                    if ($rt['code']) {
+                    } else {
+                        $this->_html_msg(0, dr_lang('[%s]分表入库失败', $cat['name']));
+                    }
+                }
+            }
+
+            $this->_html_msg( 1,dr_lang('[%s]正在执行中(%s)...', $cat['name'], "$tpage/$page"),$url.'&total='.$total.'&page='.($page+1));
+
         } elseif ($at == 'open') {
 
             // 开启独立分表
@@ -617,7 +716,8 @@ class Category extends \Phpcmf\Table {
             }
 
 
-            $url = dr_url(APP_DIR.'/category/table_add', ['at' => 'open', 'id' => $id]);
+            $ids = (\Phpcmf\Service::L('input')->get('ids'));
+            $url = dr_url(APP_DIR.'/category/table_add', ['at' => 'open', 'id' => $id, 'ids' => $ids]);
             $page = (int)\Phpcmf\Service::L('input')->get('page');
 
             $table = SITE_ID.'_'.$cat['mid'].'_c'.$cat['id'];
@@ -628,6 +728,18 @@ class Category extends \Phpcmf\Table {
                 // 统计数量
                 $total = \Phpcmf\Service::M()->table_site($cat['mid'])->where('catid in ('.$cat['childids'].')')->counts();
                 if (!$total) {
+                    if ($ids) {
+                        $arr = explode(',', $ids);
+                        foreach ($arr as $key => $c) {
+                            if ($c == $id) {
+                                // 找到了
+                                if (isset($arr[$key+1])) {
+                                    $url = dr_url(APP_DIR.'/category/table_add', ['at' => 'open', 'id' => $arr[$key+1], 'ids' => $ids]);
+                                    $this->_html_msg(1, dr_lang('[%s]正在执行中...', $cat['name']), $url);
+                                }
+                            }
+                        }
+                    }
                     $this->_html_msg(0, dr_lang('主表中没有数据'));
                 }
 
@@ -648,15 +760,27 @@ class Category extends \Phpcmf\Table {
 
                 \Phpcmf\Service::M('category')->init($this->init)->update($id, ['is_ctable' => 1]);
 
-                $this->_html_msg(1, dr_lang('正在执行中...'), $url.'&total='.$total.'&page='.($page+1));
+                $this->_html_msg(1, dr_lang('[%s]正在执行中...', $cat['name']), $url.'&total='.$total.'&page='.($page+1));
             }
 
             $tpage = ceil($total / $psize); // 总页数
 
             // 更新完成
             if ($page > $tpage) {
+                if ($ids) {
+                    $arr = explode(',', $ids);
+                    foreach ($arr as $key => $c) {
+                        if ($c == $id) {
+                            // 找到了
+                            if (isset($arr[$key+1])) {
+                                $url = dr_url(APP_DIR.'/category/table_add', ['at' => 'open', 'id' => $arr[$key+1], 'ids' => $ids]);
+                                $this->_html_msg(1, dr_lang('[%s]正在执行中...', $cat['name']), $url);
+                            }
+                        }
+                    }
+                }
                 \Phpcmf\Service::M('cache')->update_data_cache();
-                $this->_html_msg(1, dr_lang('数据处理完成（%s）', $total));
+                $this->_html_msg(1, dr_lang('[%s]数据处理完成（%s）', $cat['name'], $total));
             }
 
             $data = \Phpcmf\Service::M()->db->table(SITE_ID.'_'.$cat['mid'])->where('catid in ('.$cat['childids'].')')->limit($psize, $psize * ($page - 1))->orderBy('id DESC')->get()->getResultArray();
@@ -664,14 +788,17 @@ class Category extends \Phpcmf\Table {
                 foreach ($data as $t) {
                     $rt = \Phpcmf\Service::M()->table($table)->replace($t);
                     if ($rt['code']) {
-                        \Phpcmf\Service::M()->table(SITE_ID.'_'.$cat['mid'])->delete($t['id']);
+                        if (!defined('MODULE_CTABLE_CP_MAIN')) {
+                            // 不是复制表的模式，改成删除主表
+                            \Phpcmf\Service::M()->table(SITE_ID.'_'.$cat['mid'])->delete($t['id']);
+                        }
                     } else {
                         $this->_html_msg(0, dr_lang('分表入库失败'));
                     }
                 }
             }
 
-            $this->_html_msg( 1, dr_lang('正在执行中【%s】...', "$tpage/$page"),$url.'&total='.$total.'&page='.($page+1));
+            $this->_html_msg( 1,dr_lang('[%s]正在执行中(%s)...', $cat['name'], "$tpage/$page"),$url.'&total='.$total.'&page='.($page+1));
         }
 
         \Phpcmf\Service::V()->assign([
@@ -977,6 +1104,7 @@ class Category extends \Phpcmf\Table {
                     $this->_json(0, $rt['msg']);
                 }
                 $data['id'] = $rt['code'];
+                \Phpcmf\Hooks::trigger('module_category_save', $data);
                 if (!$cf['code']) {
                     // 重复验证
                     $data['dirname'] = $data['dirname'].$rt['code'];
@@ -1729,6 +1857,7 @@ class Category extends \Phpcmf\Table {
                         'url' => isset($_GET['is_self']) ? dr_url(APP_DIR.'/category/edit', ['id' => $data[1]['id']]) : '',
                     ]);
                 }
+                \Phpcmf\Hooks::trigger('module_category_save', $data[1]);
                 return dr_return_data(1, dr_lang('操作成功'), [
                     'url' => isset($_GET['is_self']) ? dr_url(APP_DIR.'/category/edit', ['id' => $data[1]['id']]) : '',
                 ]);

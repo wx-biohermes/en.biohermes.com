@@ -58,7 +58,7 @@ class Api extends \Phpcmf\App
             'param' => $data,
             'where' => $where ? urlencode(implode(' AND ', $where)) : '',
             'search' => dr_form_search_hidden(['search' => 1, 'is_iframe' => 1,  'pagesize' => $pagesize]),
-            'urlrule' => dr_url('tag/api/index', $rules, '/index.php'),
+            'urlrule' => '/index.php?s=tag&c=api&m=index&'.http_build_query($rules),
             'pagesize' => $pagesize,
         ]);
 

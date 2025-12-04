@@ -1107,24 +1107,19 @@ class Module extends \Phpcmf\Model {
                             $cache['field'][$f['fieldname']] = $f;
                         }
                     }
-
                     // 系统模块
                     $cache['system'] = $config['system'];
-
-
                     // 栏目分表
                     $cat_table = $siteid.'_'.($data['share'] ? 'share' : $mdir).'_category';
                     if ($this->db->fieldExists('is_ctable', $this->dbprefix($cat_table)) && $this->table($cat_table)->where('is_ctable=1')->counts()) {
                         // 存在栏目分表
                         $cache['is_ctable'] = 1;
                     }
-
                     // 自定义栏目模型字段，把父级栏目的字段合并至当前栏目
                     $like = ['catmodule-'.$mdir];
                     if ($cache['share']) {
                         $like[] = 'catmodule-share';
                     }
-
                     // 模型字段查询
                     $cat_data_field = [];
                     $field = $this->db->table('field')
@@ -1141,16 +1136,13 @@ class Module extends \Phpcmf\Model {
                     }
                     $cache['category_data_field'] = $cat_data_field;
                     $cache['category'] = [ 0 => $mdir];
-
                     // 模块表单
                     $cache['form'] = [];
                     if (dr_is_app('mform')) {
                         $cache = \Phpcmf\Service::M('mform', 'mform')->link_cache($mdir, $cache);
                     }
-
                     // 搜索验证
                     !$cache['setting']['search']['use'] && $cache['setting']['search'] = [];
-
                     // 评论缓存 转移评论
                     if ($cache['comment'] && dr_is_app('comment')) {
                         $ct = $this->table('app_comment')->where('name', 'module')->getRow();
@@ -1175,11 +1167,9 @@ class Module extends \Phpcmf\Model {
                         $this->db->table('module')->where('dirname', $mdir)->update(['comment' => '']);
                     }
                     unset($cache['comment']);
-
                     // 更新内容模块菜单
                     \Phpcmf\Service::M('menu', 'module')->update_module($mdir, $config, $cache['form']);
                     !$cache['title'] && $cache['title'] = $cache['name'];
-
                     // 执行模块自己的缓存程序
                     if (is_file(dr_get_app_dir($mdir).'Config/Mcache.php')) {
                         require dr_get_app_dir($mdir).'Config/Mcache.php';
@@ -1204,15 +1194,12 @@ class Module extends \Phpcmf\Model {
                         'is_index_html' => $cache['setting']['module_index_html'] ? 1 : 0,
                         'pcatpost' => isset($cache['setting']['pcatpost']) && $cache['setting']['pcatpost'] ? 1 : 0,
                     ];
-
                     // 内容模块
                     if (in_array($config['system'], [1, 2])) {
                         $content[$mdir] = $all[$mdir];
                     }
-
                     // 删除缓存
                     //\Phpcmf\Service::L('cache')->clear('module-'.$siteid.'-'.$mdir);
-
                     // 共享模块
                     if ($cache['share'] && $this->cat_share_lock[$siteid]) {
                         // 删除缓存
@@ -1220,7 +1207,7 @@ class Module extends \Phpcmf\Model {
                         // 写入缓存
                         \Phpcmf\Service::L('cache')->set_file('module-'.$siteid.'-share', [
                             'id' => 0,
-                            'name' => '共享',
+                            'name' => dr_lang('共享'),
                             'share' => 1,
                             'mid' => 'share',
                             'dirname' => 'share',
@@ -1228,7 +1215,6 @@ class Module extends \Phpcmf\Model {
                         ]);
                         $this->cat_share_lock[$siteid] = 0;
                     }
-
                     // 写入缓存
                     \Phpcmf\Service::L('cache')->set_file('module-'.$siteid.'-'.$mdir, $cache);
                 } else {
@@ -1243,15 +1229,28 @@ class Module extends \Phpcmf\Model {
         // vip标记
         file_put_contents(CMSPATH.'Config/vip.lock', 'ok');
 
-        if ($this->table('admin_menu')->where('uri', 'site_param/index')->counts()
-            && $this->table('admin_menu')->where('uri', 'module/site_param/index')->counts()) {
-            $this->table('admin_menu')->where('uri', 'site_param/index')->delete();
+        foreach ([
+                     'site_config/index',
+                     'site_mobile/index',
+                     'site_domain/index',
+                     //'site_image/index',
+                     'site_param/index',
+                 ] as $ui) {
+            $main = $this->table('admin_menu')->where('uri', $ui)->getRow();
+            if ($main) {
+                if ($this->table('admin_menu')->where('uri', 'module/'.$ui)->counts()) {
+                    $this->table('admin_menu')->where('uri', $ui)->delete();
+                } else {
+                    $this->table('admin_menu')->update($main['id'], ['uri' => 'module/'.$ui]);
+                }
+            }
         }
-        $this->table('admin_menu')->update(0, ['uri' => 'module/site_config/index'], 'uri="site_config/index"');
-        $this->table('admin_menu')->update(0, ['uri' => 'module/site_mobile/index'], 'uri="site_mobile/index"');
-        $this->table('admin_menu')->update(0, ['uri' => 'module/site_domain/index'], 'uri="site_domain/index"');
-        $this->table('admin_menu')->update(0, ['uri' => 'module/site_image/index'], 'uri="site_image/index"');
-        $this->table('admin_menu')->update(0, ['name' => '网站设置'], 'mark="config-web"');
+
+        $this->table('admin_menu')->update(0, ['name' => dr_lang('网站设置')], 'mark=\'config-web\'');
+
+        if (SITE_LANGUAGE != 'zh-cn') {
+            $this->table('admin_menu')->where('uri', 'module/content/index')->delete();
+        }
 
         return;
     }

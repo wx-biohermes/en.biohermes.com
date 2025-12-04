@@ -73,7 +73,7 @@ class Home extends \Phpcmf\App
 
     public function qqun() {
 
-        $img = dr_get_app_dir(APP_DIR).'Config/qun.png';
+        $img = dr_get_app_dir(APP_DIR).'Config/qq.jpg';
         $info = getimagesize($img);
         $imgExt = image_type_to_extension($info[2], false);  //获取文件后缀
         $fun = "imagecreatefrom{$imgExt}";

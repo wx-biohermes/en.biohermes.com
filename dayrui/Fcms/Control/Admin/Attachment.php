@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Control\Admin;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -15,7 +15,7 @@ class Attachment extends \Phpcmf\Common {
 		parent::__construct();
         $this->type = [
             0 => [
-                'name' => '本地磁盘',
+                'name' => dr_lang('本地磁盘'),
             ],
         ];
         $this->path = FCPATH.'ThirdParty/Storage/';

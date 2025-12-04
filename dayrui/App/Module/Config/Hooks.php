@@ -1,5 +1,22 @@
 <?php
 
+\Phpcmf\Hooks::on('module_content_after', function($data, $old) {
+    // 关联字段时储存
+    $related = \Phpcmf\Service::L('field')->get_post_temp_data('related');
+    if ($data[1]['status'] == 9 && $related) {
+        foreach ($related as $t) {
+            // [$mid, $fname, $value]
+            if ($t[0] && $t[1]) {
+                \Phpcmf\Service::M()->table_site($t[0])->where($t[1], $data[1]['id'])->update(0, [$t[1] => 0]);
+                if ($t[2]) {
+                    // 储存
+                    \Phpcmf\Service::M()->table_site($t[0])->where_in('id', $t[2])->update(0, [$t[1] => $data[1]['id']]);
+                }
+            }
+
+        }
+    }
+});
 
 /**
  * 模块首页地址
@@ -24,15 +41,17 @@ function dr_module_param($mid, $name) {
 }
 
 // 模块主表(栏目分表)，mid，cat栏目信息
-function dr_module_ctable($mid, $cat) {
+if (!function_exists('dr_module_ctable')) {
+    function dr_module_ctable($mid, $cat) {
 
-    if ($cat && isset($cat['is_ctable']) && $cat['is_ctable']) {
-        $pid = explode(',', $cat['pids']);
-        $tid = isset($pid[1]) ? $pid[1] : $cat['id'];
-        return $mid.'_c'.$tid;
+        if ($cat && isset($cat['is_ctable']) && $cat['is_ctable']) {
+            $pid = explode(',', $cat['pids']);
+            $tid = isset($pid[1]) ? $pid[1] : $cat['id'];
+            return $mid.'_c'.$tid;
+        }
+
+        return $mid;
     }
-
-    return $mid;
 }
 
 function dr_module_category_data_field($cat, $field, $module) {
@@ -302,7 +321,7 @@ function dr_cat_value($a = '', $b = '', $c = '', $d = '', $e = '') {
     if (!$cat) {
         return [];
     }
-    $cat['url'] = dr_url_rel(dr_url_prefix($cat['url']));
+    $cat['url'] = dr_url_rel(dr_url_prefix($cat['url'], $mid, $siteid, XR_V()->_is_mobile));
     if ($name) {
         return $cat[$name];
     }
@@ -408,7 +427,7 @@ if (!function_exists('dr_show_hits')) {
         if ($is) {
             $rt.= "$(\"#{$dom}\").html(data.msg);";
         }
-        return $html."<script type=\"text/javascript\"> $.ajax({ type: \"GET\", url:\"".dr_web_prefix("index.php?s=api&c=module&siteid=".dr_module_siteid()."&app=".$dir)."&m=hits&id={$id}\", dataType: \"jsonp\", success: function(data){ if (data.code) { ".$rt." } else { dr_tips(0, data.msg); } } }); </script>";
+        return $html."<script type=\"text/javascript\">var apiurl=\"".dr_web_prefix("index.php?s=api&c=module&siteid=".dr_module_siteid()."&app=".$dir)."\"; $.ajax({ type: \"GET\", url:apiurl+\"&m=hits&id={$id}\", dataType: \"jsonp\", success: function(data){ if (data.code) { ".$rt." } else { dr_tips(0, data.msg); } } }); </script>";
     }
 }
 
@@ -805,7 +824,7 @@ function dr_module_api_search() {
     dr_redirect(\Phpcmf\Service::L('Router')->search_url(
         $param,
         'keyword',
-        dr_safe_replace(\Phpcmf\Service::L('input')->get('keyword')),
+        'CODE'.dr_authcode(dr_safe_replace(\Phpcmf\Service::L('input')->get('keyword')), 'ENCODE'),
         $dir
     ));
 }

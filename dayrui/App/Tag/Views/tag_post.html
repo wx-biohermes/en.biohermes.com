@@ -4,7 +4,7 @@
     <p>{if is_file(IS_USE_MODULE.'Models/Repair.php') && $id}
         {dr_lang('内容关联')}：{cache name=module-content}
         {php $tb='tag_'.$t['dirname'];}
-        <a href="javascript:dr_iframe_show('{$t.name}', '{dr_url('tag/home/module_index', ['mid'=>$t.dirname, 'tid'=>$id])}');">{$t.name}（{count action=table table_site=$tb tid=$id}）</a>
+        <span>{$t.name}（{dr_tag_count($t.dirname, $name)}）</span>
         {/cache}
         {else}
         <a href="javascript:dr_update_cache();">{dr_lang('更改数据之后需要更新缓存之后才能生效')}</a>

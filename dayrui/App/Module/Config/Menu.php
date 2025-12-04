@@ -38,11 +38,6 @@ return [
                             'icon' => 'fa fa-globe',
                             'uri' => 'module/site_domain/index',
                         ],
-                        [
-                            'name' => '图片设置',
-                            'icon' => 'fa fa-photo',
-                            'uri' => 'module/site_image/index',
-                        ],
                     ],
                     'displayorder' => -1,
                 ],

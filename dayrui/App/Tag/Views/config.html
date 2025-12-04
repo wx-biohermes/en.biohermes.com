@@ -61,7 +61,7 @@
                         <div class="form-group">
                             <label class="col-md-2 control-label">提取词语每页数量</label>
                             <div class="col-md-9">
-                                <label><input class="form-control " type="text" name="data[add_limit]" value="{php echo $data['add_limit'] ? $data['add_limit'] : 50;}" >
+                                <label><input class="form-control " type="text" name="data[add_limit]" value="{php echo $data['limit_add'] ? $data['limit_add'] : 1;}" >
                                 </label><span class="help-block">从模块中提取词语时，每页执行的数量</span>
                             </div>
                         </div>
@@ -69,7 +69,7 @@
                         <div class="form-group">
                             <label class="col-md-2 control-label">更新地址每页数量</label>
                             <div class="col-md-9">
-                                <label><input class="form-control " type="text" name="data[limit_update]" value="{php echo $data['limit_update'] ? $data['limit_update'] : 500;}" >
+                                <label><input class="form-control " type="text" name="data[limit_update]" value="{php echo $data['limit_update'] ? $data['limit_update'] : 300;}" >
                                 </label><span class="help-block">一键更新词库地址时，每页执行的数量</span>
                             </div>
                         </div>
@@ -78,7 +78,7 @@
                         <div class="form-group">
                             <label class="col-md-2 control-label">生成索引每页数量</label>
                             <div class="col-md-9">
-                                <label><input class="form-control " type="text" name="data[limit_index]" value="{php echo $data['limit_index'] ? $data['limit_index'] : 50;}" >
+                                <label><input class="form-control " type="text" name="data[limit_index]" value="{php echo $data['limit_index'] ? $data['limit_index'] : 20;}" >
                                 </label><span class="help-block">一键生成词库索引时，每页执行的数量</span>
                             </div>
                         </div>
@@ -87,6 +87,13 @@
                             <div class="col-md-9">
                                 <input type="checkbox" name="data[list_count]" value="1" {if $data['list_count']}checked{/if} data-on-text="{dr_lang('已开启')}" data-off-text="{dr_lang('已关闭')}" data-on-color="success" data-off-color="danger" class="make-switch" data-size="small">
                                 <span class="help-block">{dr_lang('后台列表中显示关联模块的数量统计，会影响加载速度')}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">生成索引的排序方式</label>
+                            <div class="col-md-9">
+                                <label><input class="form-control " type="text" name="data[order_by]" value="{php echo $data['order_by'] ? $data['order_by'] : 'updatetime desc';}" >
+                                </label><span class="help-block">排序方式变更后需要重新生成索引才能生效</span>
                             </div>
                         </div>
                         {/if}

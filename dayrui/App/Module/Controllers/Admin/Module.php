@@ -324,9 +324,16 @@ class Module extends \Phpcmf\Common {
         if (IS_AJAX_POST) {
             $post = \Phpcmf\Service::L('input')->post('flag');
             if ($post) {
+                $cat = \Phpcmf\Service::L('input')->post('cat');
                 $role = \Phpcmf\Service::L('input')->post('role');
                 foreach ($post as $fid => $t) {
+                    $post[$fid]['cat'] = [];
                     $post[$fid]['role'] = [];
+                    if (isset($cat[$fid]) && $cat[$fid]) {
+                        foreach ($cat[$fid] as $fid2 => $aid) {
+                            $post[$fid]['cat'][$aid] = $aid;
+                        }
+                    }
                     if (isset($role[$fid]) && $role[$fid]) {
                         foreach ($role[$fid] as $fid2 => $aid) {
                             $post[$fid]['role'][$aid] = 1;
@@ -346,6 +353,7 @@ class Module extends \Phpcmf\Common {
         }
 
         \Phpcmf\Service::V()->assign([
+            'mid' => $data['dirname'],
             'flag' => $data['setting']['flag'],
             'form' => dr_form_hidden(),
             'role' => \Phpcmf\Service::C()->get_cache('auth'),

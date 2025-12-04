@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Field;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -28,7 +28,8 @@ class Ftable extends \Phpcmf\Library\A_Field {
     public function option($option) {
 
         $html = '';
-        for ($i = 1; $i <= 30; $i++) {
+        $max = dr_count($option['field'])+5;
+        for ($i = 1; $i <= $max; $i++) {
             $html.= '<div class="form-group">
 				<label class="col-md-2 control-label">'.dr_lang('表格第%s列', $i).'</label>
 				<div class="col-md-9">
@@ -185,6 +186,8 @@ class Ftable extends \Phpcmf\Library\A_Field {
                     } elseif (is_file(ROOTPATH.'static/assets/images/ext/'.$file['fileext'].'.png')) {
                         $preview = ROOT_THEME_PATH.'assets/images/ext/'.$file['fileext'].'.png';
                     }
+                } elseif (dr_is_image($value[$hang][$lie])) {
+                    $preview = $link = $value[$hang][$lie];
                 }
             }
             if ($config['option'] && strpos((string)$config['option'], '-') !== false) {

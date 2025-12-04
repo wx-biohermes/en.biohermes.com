@@ -56,12 +56,12 @@ foreach ($this->site as $siteid) {
         if (\Phpcmf\Service::M()->db->tableExists($table)) {
             // 创建字段 代码
             if (!\Phpcmf\Service::M()->db->fieldExists('disabled', $table)) {
-                \Phpcmf\Service::M()->query('ALTER TABLE `' . $table . '` ADD `disabled` tinyint(1) DEFAULT  \'0\'');
+                \Phpcmf\Service::M('table')->add_field($table, 'disabled', 'tinyint(1)', 'DEFAULT \'0\'', '');
                 \Phpcmf\Service::M()->query('UPDATE `' . $table . '` SET `disabled` = 0');
             }
             \Phpcmf\Service::M()->query('UPDATE `' . $table . '` SET `disabled` = 0 WHERE `disabled` IS NULL ');
             if (!\Phpcmf\Service::M()->db->fieldExists('ismain', $table)) {
-                \Phpcmf\Service::M()->query('ALTER TABLE `' . $table . '` ADD `ismain` tinyint(1) DEFAULT  \'0\'');
+                \Phpcmf\Service::M('table')->add_field($table, 'ismain', 'tinyint(1)', 'DEFAULT \'0\'', '');
                 \Phpcmf\Service::M()->query('UPDATE `' . $table . '` SET `ismain` = 1');
             }
         }
@@ -74,23 +74,17 @@ foreach ($this->site as $siteid) {
                 // 附表字段是否同步
                 $tables = [];
                 $otable = $mtable.'_data_0'; // 母表
-                $osql = \Phpcmf\Service::M()->db->query("SHOW CREATE TABLE `".$otable."`")->getRowArray();
-                $arr = explode(PHP_EOL, $osql['Create Table']);
-                $sql = [];
-                foreach ($arr as $t) {
-                    if (preg_match('/`(.+)`/U', $t, $mt) && strpos($t, ' KEY ') === false) {
-                        $sql[$mt[1]] = trim($t, ',');
-                    }
-                }
-                $old = \Phpcmf\Service::M()->db->query('SHOW FULL COLUMNS FROM `'.$otable.'`')->getResultArray();
+                list($a, $sql) = \Phpcmf\Service::M('table')->create_table_sql($otable);
+
+                $old = \Phpcmf\Service::M('table')->show_full_colunms($otable);
 
                 // 模块附表
                 for ($i = 1; $i < 200; $i ++) {
                     // 新表是否存在
-                    if (!\Phpcmf\Service::M()->db->query("SHOW TABLES LIKE '".$mtable.'_data_'.$i."'")->getRowArray()) {
+                    if (!\Phpcmf\Service::M()->db->tableExists($mtable.'_data_'.$i)) {
                         break;
                     }
-                    $new = \Phpcmf\Service::M()->db->query('SHOW FULL COLUMNS FROM `'.$mtable.'_data_'.$i.'`')->getResultArray();
+                    $new = \Phpcmf\Service::M('table')->show_full_colunms($mtable.'_data_'.$i);
                     foreach ($old as $t) {
                         $td = 0;
                         foreach ($new as $n) {
@@ -110,52 +104,57 @@ foreach ($this->site as $siteid) {
                 // 增加长度
                 $table = $prefix . $siteid . '_' . $m['dirname'];
                 if (\Phpcmf\Service::M()->db->fieldExists('inputip', $table)) {
-                    \Phpcmf\Service::M()->query('ALTER TABLE `' . $table . '` CHANGE `inputip` `inputip` VARCHAR(100) NOT NULL COMMENT \'客户端ip信息\';');
+                    \Phpcmf\Service::M('table')->edit_field($table, 'inputip', 'VARCHAR(100)', 'NOT NULL', '客户端ip信息');
                 }
+                $table = $prefix . $siteid . '_' . $m['dirname'] . '_time';
+                if (!\Phpcmf\Service::M()->db->fieldExists('error', $table)) {
+                    \Phpcmf\Service::M('table')->add_field($table, 'error', 'tinyint(1)', 'DEFAULT 0', '');
+                }
+
                 $table = $prefix . $siteid . '_' . $m['dirname'] . '_recycle';
                 if (\Phpcmf\Service::M()->db->tableExists($table)) {
                     // 创建字段 删除理由
                     if (!\Phpcmf\Service::M()->db->fieldExists('result', $table)) {
-                        \Phpcmf\Service::M()->query('ALTER TABLE `' . $table . '` ADD `result` Text NOT NULL');
+                        \Phpcmf\Service::M('table')->add_field($table, 'result', 'Text', 'NOT NULL', '');
                     }
                 }
                 $table = $prefix . $siteid . '_' . $m['dirname'] . '_support';
                 if (\Phpcmf\Service::M()->db->tableExists($table)) {
                     // 创建字段 游客点赞
                     if (!\Phpcmf\Service::M()->db->fieldExists('agent', $table)) {
-                        \Phpcmf\Service::M()->query('ALTER TABLE `' . $table . '` ADD `agent` VARCHAR(200) DEFAULT NULL');
+                        \Phpcmf\Service::M('table')->add_field($table, 'agent', 'VARCHAR(200)', 'DEFAULT NULL', '');
                     }
                 }
                 $table = $prefix . $siteid . '_' . $m['dirname'] . '_oppose';
                 if (\Phpcmf\Service::M()->db->tableExists($table)) {
                     // 创建字段 游客点赞
                     if (!\Phpcmf\Service::M()->db->fieldExists('agent', $table)) {
-                        \Phpcmf\Service::M()->query('ALTER TABLE `' . $table . '` ADD `agent` VARCHAR(200) DEFAULT NULL');
+                        \Phpcmf\Service::M('table')->add_field($table, 'agent', 'VARCHAR(200)', 'DEFAULT NULL', '');
                     }
                 }
                 $table = $prefix . $siteid . '_' . $m['dirname'] . '_verify';
                 if (!\Phpcmf\Service::M()->db->fieldExists('vid', $table)) {
-                    \Phpcmf\Service::M()->query('ALTER TABLE `' . $table . '` ADD `vid` INT(10) DEFAULT NULL');
+                    \Phpcmf\Service::M('table')->add_field($table, 'vid', 'INT(10)', 'DEFAULT NULL', '');
                 }
                 if (!\Phpcmf\Service::M()->db->fieldExists('islock', $table)) {
-                    \Phpcmf\Service::M()->query('ALTER TABLE `' . $table . '` ADD `islock` tinyint(1) DEFAULT NULL');
+                    \Phpcmf\Service::M('table')->add_field($table, 'islock', 'tinyint(1)', 'DEFAULT NULL', '');
                 }
                 // 点击时间
                 $table = $prefix . $siteid . '_' . $m['dirname'] . '_hits';
                 foreach (['day_time', 'week_time', 'month_time', 'year_time'] as $a) {
                     if (!\Phpcmf\Service::M()->db->fieldExists($a, $table)) {
-                        \Phpcmf\Service::M()->query('ALTER TABLE `' . $table . '` ADD `' . $a . '` INT(10) DEFAULT NULL');
+                        \Phpcmf\Service::M('table')->add_field($table, $a, 'INT(10)', 'DEFAULT NULL', '');
                     }
                 }
                 $table = $prefix . $siteid . '_' . $m['dirname'] . '_category';
                 if (\Phpcmf\Service::M()->db->tableExists($table)) {
                     if (!\Phpcmf\Service::M()->db->fieldExists('disabled', $table)) {
-                        \Phpcmf\Service::M()->query('ALTER TABLE `' . $table . '` ADD `disabled` tinyint(1) DEFAULT \'0\'');
+                        \Phpcmf\Service::M('table')->add_field($table, 'disabled', 'tinyint(1)', 'DEFAULT \'0\'', '');
                         \Phpcmf\Service::M()->query('UPDATE `' . $table . '` SET `disabled` = 0');
                     }
                     \Phpcmf\Service::M()->query('UPDATE `' . $table . '` SET `disabled` = 0 WHERE `disabled` IS NULL ');
                     if (!\Phpcmf\Service::M()->db->fieldExists('ismain', $table)) {
-                        \Phpcmf\Service::M()->query('ALTER TABLE `' . $table . '` ADD `ismain` tinyint(1) DEFAULT \'0\'');
+                        \Phpcmf\Service::M('table')->add_field($table, 'ismain', 'tinyint(1)', 'DEFAULT \'0\'', '');
                         \Phpcmf\Service::M()->query('UPDATE `' . $table . '` SET `ismain` = 1');
                     }
                 }

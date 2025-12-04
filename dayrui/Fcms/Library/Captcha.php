@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Library;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -21,12 +21,16 @@ class Captcha {
     private $randstring = ['*', '@', '$', '%', '&', '!'];
 
     public function __construct() {
-        $this->font = WRITEPATH.'captcha.ttf';
-        if (!is_file($this->font)) {
-            // 加载老版本的字体文件
-            $this->font = CONFIGPATH.'font/1.ttf';
+        if (function_exists('my_captcha_ttf()')) {
+            $this->font = my_captcha_ttf();
+        } else {
+            $this->font = WRITEPATH.'captcha.ttf';
             if (!is_file($this->font)) {
-                log_message('error', '验证码字体文件（'.WRITEPATH.'captcha.ttf）不存在，可能无法生成验证码');
+                // 加载老版本的字体文件
+                $this->font = CONFIGPATH.'font/1.ttf';
+                if (!is_file($this->font)) {
+                    log_message('error', '验证码字体文件（'.WRITEPATH.'captcha.ttf）不存在，可能无法生成验证码');
+                }
             }
         }
     }

@@ -34,6 +34,9 @@ class Home extends \Phpcmf\App {
             $data = \Phpcmf\Service::M('Tag', 'tag')->tag_row($tag);
             // 格式化显示
             $field = \Phpcmf\Service::L('cache')->get('tag-'.SITE_ID.'-field');
+            if (!$field) {
+                $field = [];
+            }
             $field['content'] = [
                 'ismain' => 1,
                 'name' => dr_lang('描述信息'),
@@ -88,6 +91,8 @@ class Home extends \Phpcmf\App {
 
         $data['page'] = max(1, (int)\Phpcmf\Service::L('Input')->get('page'));
         $data['join'] = SITE_SEOJOIN;
+
+        $data['tags'] && $data['tags'] = urlencode($data['tags']);
 
         $rep = new \php5replace($data);
         $meta_title = $data['page'] > 1 ? str_replace(array('[', ']'), '', (string)$config['seo_title']) : preg_replace('/\[.+\]/U', '', (string)$config['seo_title']);

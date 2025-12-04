@@ -1,8 +1,8 @@
 <?php namespace Phpcmf\Control\Admin;
 
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -146,7 +146,7 @@ class Api extends \Phpcmf\Common {
 
     // 跳转首页
     public function gohome() {
-        dr_redirect('index.php');
+        dr_redirect(SITE_URL.'index.php');
     }
 
     // 应用市场
@@ -816,7 +816,7 @@ class Api extends \Phpcmf\Common {
             ]);
             $this->_json($rt['code'], $rt['msg']);
         } else {
-            $this->_json(0, dr_lang('你没有定义第三方短信接口: '. $method));
+            $this->_json(0, dr_lang('你没有定义短信接口'));
         }
     }
 
@@ -900,7 +900,8 @@ class Api extends \Phpcmf\Common {
 
         $code = dr_catcher_data($url, 5);
         if ($code != 'phpcmf ok') {
-            $this->_json(0, '['.$v.']域名绑定异常，无法访问：' . $url . '，可以尝试手动访问此地址，如果提示phpcmf ok就表示成功');
+            ;
+            $this->_json(0, dr_lang('[%s]域名绑定异常，无法访问：%s，可以尝试手动访问此地址，如果提示phpcmf ok就表示成功', dr_lang($v), $url));
         }
 
         $this->_json(1, dr_lang('绑定正常'));
@@ -924,12 +925,12 @@ class Api extends \Phpcmf\Common {
 
         $url = dr_http_prefix($v) . '/api.php';
         if (strpos($v, ':') !== false) {
-            $this->_json(0, '可以尝试手动访问：' . $url . '，如果提示phpcmf ok就表示成功');
+            $this->_json(0, dr_lang('可以尝试手动访问：%s，如果提示phpcmf ok就表示成功', $url));
         }
 
         $code = dr_catcher_data($url, 5);
         if ($code != 'phpcmf ok') {
-            $this->_json(0, '['.$v.']域名绑定异常，无法访问：' . $url . '，可以尝试手动访问此地址，如果提示phpcmf ok就表示成功');
+            $this->_json(0, dr_lang('[%s]域名绑定异常，无法访问：%s，可以尝试手动访问此地址，如果提示phpcmf ok就表示成功', dr_lang($v), $url));
         }
 
         $this->_json(1, dr_lang('绑定正常'));
@@ -959,12 +960,12 @@ class Api extends \Phpcmf\Common {
 
         $url = SITE_URL.$v . '/api.php';
         if (strpos($v, ':') !== false) {
-            $this->_json(0, '可以尝试手动访问：' . $url . '，如果提示phpcmf ok就表示成功');
+            $this->_json(0, dr_lang('可以尝试手动访问：%s，如果提示phpcmf ok就表示成功', $url));
         }
 
         $code = dr_catcher_data($url, 5);
         if ($code != 'phpcmf ok') {
-            $this->_json(0, '['.$v.']目录绑定异常，无法访问：' . $url . '，可以尝试手动访问此地址，如果提示phpcmf ok就表示成功');
+            $this->_json(0, dr_lang('[%s]目录绑定异常，无法访问：%s，可以尝试手动访问此地址，如果提示phpcmf ok就表示成功', $v, $url));
         }
 
         $this->_json(1, dr_lang('目录正常'));
@@ -1226,7 +1227,7 @@ class Api extends \Phpcmf\Common {
 
     // 短信接口查询
     public function sms_info() {
-        exit($this->_api_sms_info());
+        $this->_json(0, '接口弃用');
     }
 
     // 版本检查
@@ -1432,5 +1433,12 @@ class Api extends \Phpcmf\Common {
      */
     public function down_img() {
         \Phpcmf\Service::L('api')->down_img();
+    }
+
+    /**
+     * 编辑器视频外链解析
+     */
+    public function video() {
+        \Phpcmf\Service::L('api')->video_link();
     }
 }

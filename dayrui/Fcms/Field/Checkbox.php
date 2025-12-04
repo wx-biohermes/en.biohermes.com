@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Field;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -25,7 +25,7 @@ class Checkbox extends \Phpcmf\Library\A_Field  {
 	 */
 	public function option($option) {
 
-		$option['options'] = isset($option['options']) ? $option['options'] : '选项名称1|1'.PHP_EOL.'选项名称2|2';
+		$option['options'] = isset($option['options']) ? $option['options'] : 'name1|1'.PHP_EOL.'name2|2';
 		
 		return [$this->_search_field().
 			'

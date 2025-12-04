@@ -85,14 +85,17 @@ class Setting_notice extends \Phpcmf\Common
 
     private function _get_file($path, $ppath, $file, $name) {
 
-        if (is_file($path.'config/notice/'.$name.'/'.$file.'.html')) {
-            return htmlentities(file_get_contents($path.'config/notice/'.$name.'/'.$file.'.html'),ENT_COMPAT,'UTF-8');
-        } elseif (is_file($ppath.'notice/'.$name.'/'.$file.'.html')) {
-            return dr_lang('############由于web目录下没有此文件，因此加载根目录下的文件：'.$ppath.'notice/'.$name.'/'.$file.'.html'.'#################').PHP_EOL
-                .htmlentities(file_get_contents($ppath.'notice/'.$name.'/'.$file.'.html'),ENT_COMPAT,'UTF-8');
+        $file1 = $path.'config/notice/'.$name.'/'.$file.'.html';
+        $file2 = $ppath.'notice/'.$name.'/'.$file.'.html';
+        if (is_file($file1)) {
+            return htmlentities(file_get_contents($file1),ENT_COMPAT,'UTF-8');
+        } elseif (is_file($file2)) {
+            return (IS_DEV ? dr_lang('############由于web目录下没有此文件，因此加载根目录下的文件：'.$file2.'#################').PHP_EOL : '')
+                .htmlentities(file_get_contents($file2),ENT_COMPAT,'UTF-8');
         }
 
-        return dr_lang('文件不存在，请手动创建此文件');
+        return (IS_DEV ? dr_lang('############'.$file1.'#################').PHP_EOL : '')
+            .dr_lang('文件不存在，请手动创建此文件');
     }
 
     // 修改模板

@@ -48,7 +48,7 @@ if ($where) {
 
 $index = \Phpcmf\Service::L('cache')->get_data('module-search-'.$dirname.'-'.$param['id']);
 if (!$index) {
-    $index = $this->_query('SELECT `params` FROM `'.$table.'_search` WHERE `id`="'.$param['id'].'"', $system, 0);
+    $index = $this->_query('SELECT `params` FROM `'.$table.'_search` WHERE `id`=\''.$param['id'].'\'', $system, 0);
     if ($index) {
         $p = dr_string2array($index['params']);
         $index['sql'] = $p['sql'];

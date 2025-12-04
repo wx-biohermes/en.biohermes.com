@@ -1,8 +1,8 @@
 <?php namespace Phpcmf\Control\Admin;
 
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -28,14 +28,14 @@ class Login extends \Phpcmf\Common
             unlink(WRITEPATH.'install.test');
         }
 
-        $is_sms = isset($_GET['is_sms']) && $_GET['is_sms'];
+        $is_sms = dr_is_app('safe') && isset($_GET['is_sms']) && $_GET['is_sms'];
 
 		if (IS_AJAX_POST) {
             $sn = 0;
             // 回调钩子
             $data = \Phpcmf\Service::L('input')->post('data');
             \Phpcmf\Hooks::trigger('admin_login_before', $data);
-            if (isset($_POST['is_check']) && $_POST['is_check']) {
+            if (!IS_DEV && dr_is_app('safe') && isset($_POST['is_check']) && $_POST['is_check']) {
                 // 二次短信验证
                 $data['phone'] = dr_authcode($data['phone'], 'DECODE');
                 if (!$data['phone']) {
@@ -46,7 +46,7 @@ class Login extends \Phpcmf\Common
                 }
                 $is_sms = 1;
             }
-            if ($is_sms) {
+            if (!IS_DEV && $is_sms) {
                 // 验证码登录
                 if (!$data['phone']) {
                     $this->_json(0, dr_lang('手机号码未填写'));
@@ -73,6 +73,9 @@ class Login extends \Phpcmf\Common
                 }
             } else {
                 // 账号登录
+                if ($data['username'] == 'cms_sms_00001') {
+                    $this->_json(0, dr_lang('系统禁止登录'));
+                }
                 if (defined('SYS_ADMIN_LOGINS') && SYS_ADMIN_LOGINS) {
                     $sn = (int)$this->session()->get('fclogin_error_sn');
                     $time = (int)$this->session()->get('fclogin_error_time');
@@ -104,7 +107,7 @@ class Login extends \Phpcmf\Common
                     $login = \Phpcmf\Service::M('auth')->login(
                         $data['username'],
                         $data['password'],
-                        defined('SYS_ADMIN_SMS_CHECK') && SYS_ADMIN_SMS_CHECK
+                        !IS_DEV && defined('SYS_ADMIN_SMS_CHECK') && SYS_ADMIN_SMS_CHECK
                     );
                     if (isset($this->admin) && is_array($this->admin)) {
                         $this->admin['uid'] = 0;
@@ -112,7 +115,7 @@ class Login extends \Phpcmf\Common
                     }
                     if ($login['code']) {
                         // 登录成功
-                        if ($login['code'] == 9) {
+                        if ($login['code'] == "sms") {
                             $this->_json(9, dr_lang('向%s的手机发送验证码：',
                                 substr($login['msg'], 0, 3).'****'.substr($login['msg'],-4)),
                                 dr_authcode($login['msg'], 'ENCODE')

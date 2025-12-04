@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Controllers\Admin;
 /**
- * {{www.xunruicms.com}}
- * {{迅睿内容管理框架系统}}
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 

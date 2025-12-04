@@ -1,0 +1,276 @@
+{template "header.html"}
+
+<div class="note note-danger">
+    <p><a href="javascript:dr_update_cache();">{dr_lang('更改数据之后需要更新缓存之后才能生效')}</a></p>
+</div>
+
+<form action="" class="form-horizontal" method="post" name="myform" id="myform">
+    {$form}
+    <div class="portlet bordered light myfbody">
+        <div class="portlet-title tabbable-line">
+            <ul class="nav nav-tabs" style="float:left;">
+                <li class="{if $page==0}active{/if}">
+                    <a href="#tab_0" data-toggle="tab" onclick="$('#dr_page').val('0')"> <i class="fa fa-cog"></i> {dr_lang('插件设置')} </a>
+                </li>
+                <li class="{if $page==1}active{/if}">
+                    <a href="#tab_1" data-toggle="tab" onclick="$('#dr_page').val('1')"> <i class="fa fa-cog"></i> {dr_lang('内页SEO')} </a>
+                </li>
+                <li class="{if $page==2}active{/if}">
+                    <a href="#tab_2" data-toggle="tab" onclick="$('#dr_page').val('2')"> <i class="fa fa-cog"></i> {dr_lang('聚合首页SEO')} </a>
+                </li>
+                <li class="{if $page==3}active{/if}">
+                    <a href="#tab_3" data-toggle="tab" onclick="$('#dr_page').val('3')"> <i class="fa fa-cog"></i> {dr_lang('自定义关联字段')} </a>
+                </li>
+
+            </ul>
+        </div>
+        <div class="portlet-body">
+            <div class="tab-content">
+
+                <div class="tab-pane {if $page==0}active{/if}" id="tab_0">
+                    <div class="form-body">
+
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('自动存储关键词')}</label>
+                            <div class="col-md-9">
+                                <input type="checkbox" name="data[auto_save]" value="1" {if $data['auto_save']}checked{/if} data-on-text="{dr_lang('已开启')}" data-off-text="{dr_lang('已关闭')}" data-on-color="success" data-off-color="danger" class="make-switch" data-size="small">
+                                <span class="help-block">{dr_lang('在发布内容时自动将关键词存储到关键字库之中')}</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('子词功能')}</label>
+                            <div class="col-md-9">
+                                <input type="checkbox" name="data[child]" value="1" {if $data['child']}checked{/if} data-on-text="{dr_lang('已开启')}" data-off-text="{dr_lang('已关闭')}" data-on-color="success" data-off-color="danger" class="make-switch" data-size="small">
+                                <span class="help-block">{dr_lang('关键词支持子词功能')}</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('一键更新方式')}</label>
+                            <div class="col-md-9">
+                                <div class="mt-radio-inline">
+                                    <label class="mt-radio mt-radio-outline"><input type="radio" name="data[open]" value="1" {if $data.open}checked=""{/if}> 新页面执行 <span></span></label>
+                                    <label class="mt-radio mt-radio-outline"><input  type="radio" name="data[open]" value="0" {if !$data.open}checked=""{/if}> 本页面弹窗执行 <span></span></label>
+                                </div>
+                                <span class="help-block">{dr_lang('点击一键提取、一键更新、一键生成时，执行页面的展示方式')}</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">提取词语每页数量</label>
+                            <div class="col-md-9">
+                                <label><input class="form-control " type="text" name="data[add_limit]" value="{php echo $data['add_limit'] ? $data['add_limit'] : 50;}" >
+                                </label><span class="help-block">从模块中提取词语时，每页执行的数量</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">更新地址每页数量</label>
+                            <div class="col-md-9">
+                                <label><input class="form-control " type="text" name="data[limit_update]" value="{php echo $data['limit_update'] ? $data['limit_update'] : 500;}" >
+                                </label><span class="help-block">一键更新词库地址时，每页执行的数量</span>
+                            </div>
+                        </div>
+
+                        {if is_file(IS_USE_MODULE.'Models/Repair.php')}
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">生成索引每页数量</label>
+                            <div class="col-md-9">
+                                <label><input class="form-control " type="text" name="data[limit_index]" value="{php echo $data['limit_index'] ? $data['limit_index'] : 50;}" >
+                                </label><span class="help-block">一键生成词库索引时，每页执行的数量</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('在列表显示统计')}</label>
+                            <div class="col-md-9">
+                                <input type="checkbox" name="data[list_count]" value="1" {if $data['list_count']}checked{/if} data-on-text="{dr_lang('已开启')}" data-off-text="{dr_lang('已关闭')}" data-on-color="success" data-off-color="danger" class="make-switch" data-size="small">
+                                <span class="help-block">{dr_lang('后台列表中显示关联模块的数量统计，会影响加载速度')}</span>
+                            </div>
+                        </div>
+                        {/if}
+
+                    </div>
+                </div>
+
+
+                <div class="tab-pane {if $page==3}active{/if}" id="tab_3">
+                    <div class="form-body">
+                        <div class="form-group">
+                            <label class="col-md-2 control-label"></label>
+                            <div class="col-md-9">
+
+                                <span class="help-block">{dr_lang('设置哪个字段作为tag词语关联的字段，默认是keywords字段')}</span>   </div>
+                        </div>
+
+
+
+                                        {cache name=module-content more=1 return=m}
+                                        <?php if (!$data['field'][$m.dirname]) { $data['field'][$m.dirname] = 'keywords';} ?>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{$m.name} / {$m.dirname}</label>
+                            <div class="col-md-9">
+                                                    <select class="form-control" name="data[field][{$m.dirname}]">
+                                                    {loop $m.field $f}
+                                                    <option value="{$f.fieldname}" {if $f.fieldname==$data['field'][$m.dirname]} selected{/if}> {dr_lang($f.name)} （{$f.fieldname}）</option>
+                                                    {/loop}
+                                                    </select>
+                            </div>
+                    </div>
+                                        {/cache}
+
+
+
+                    </div>
+                </div>
+
+                <div class="tab-pane {if $page==1}active{/if}" id="tab_1">
+                    <div class="form-body">
+
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">内容页地址</label>
+                            <div class="col-md-9">
+                                <input class="form-control input-xlarge" type="text" name="data[urlrule]" value="{$data['urlrule']}" >
+                                <span class="help-block">默认地址是：/index.php?s=tag&name=词语</span>
+                                <span class="help-block">{tag}表示英文词、{name}表示中文词、{id}表示id号</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">内容页分页地址</label>
+                            <div class="col-md-9">
+                                <input class="form-control input-xlarge" type="text" name="data[page_urlrule]" value="{$data['page_urlrule']}" >
+                                <span class="help-block">默认地址是：/index.php?s=tag&name=词语&page=2</span>
+                                <span class="help-block">{tag}表示英文词、{name}表示中文词、{id}表示id号、{page}表示分页号</span>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">自定义地址设置方式</label>
+                            <div class="col-md-9">
+
+                                <span class="help-block">示例自定义内容地址：tag/{tag}.html</span>
+                                <span class="help-block">示例自定义分页地址：tag/{tag}-{page}.html</span>
+
+                                <span class="help-block">1、服务器开启伪静态功能，https://www.xunruicms.com/doc/671.html</span>
+                                <span style="margin-bottom: 20px;" class="help-block">2、将以下代码手动写入到更目录的./config/rewrite.php 数组体[ ....  ]中</span>
+                                <pre style="padding: 10px;margin: 20px 0;">"tag\/(.+)\-([0-9]+)\.html" => "index.php?s=tag&name=$1&page=$2",  // tag插件分页</pre>
+
+                                <pre style="padding: 10px;margin: 20px 0;">"tag\/(.+)\.html" => "index.php?s=tag&name=$1",  // tag插件</pre>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('多词语连接符号')}</label>
+                            <div class="col-md-7">
+                                <label>
+                                    <input type="text" name="data[catjoin]" value="{htmlspecialchars((string)$data.catjoin)}" class="form-control">
+                                </label>
+                                <span class="help-block"> {dr_lang('针对tag的连接符号，默认为"/"，如：china[连接符号]beijin')} </span>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('SEO标题')}</label>
+                            <div class="col-md-9">
+                                <textarea class="form-control " style="height:90px" name="data[seo_title]">{$data['seo_title']}</textarea>
+                                <span class="help-block">通配符：{字段名称}，{name}表示tag名称</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('SEO关键字')}</label>
+                            <div class="col-md-9">
+                                <textarea class="form-control " style="height:90px" name="data[seo_keywords]">{$data['seo_keywords']}</textarea>
+                                <span class="help-block">通配符：{字段名称}，{tags}表示tag词组</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('SEO描述信息')}</label>
+                            <div class="col-md-9">
+                                <textarea class="form-control " style="height:90px" name="data[seo_description]">{$data['seo_description']}</textarea>
+                                <span class="help-block">通配符：{字段名称}，{content}表示tag的内容</span>
+
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+                <div class="tab-pane {if $page==2}active{/if}" id="tab_2">
+                    <div class="form-body">
+
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">聚合首页地址</label>
+                            <div class="col-md-9">
+                                <input class="form-control input-xlarge" type="text" name="data[index_urlrule]" value="{$data['index_urlrule']}" >
+                                <span class="help-block">默认地址是：/index.php?s=tag</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">聚合首页分页地址</label>
+                            <div class="col-md-9">
+                                <input class="form-control input-xlarge" type="text" name="data[index_page_urlrule]" value="{$data['index_page_urlrule']}" >
+                                <span class="help-block">默认地址是：/index.php?s=tag&page=分页号</span>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">自定义地址设置方式</label>
+                            <div class="col-md-9">
+
+                                <span class="help-block">示例自定义地址：/tag/</span>
+                                <span class="help-block">示例自定义分页地址：/tag/p{page}.html</span>
+
+                                <span class="help-block">1、服务器开启伪静态功能，https://www.xunruicms.com/doc/671.html</span>
+                                <span style="margin-bottom: 20px;" class="help-block">2、将以下代码手动写入到更目录的./config/rewrite.php 数组体[ ....  ]中</span>
+                                <code style="padding: 10px;margin: 20px 0;">"tag" => "index.php?s=tag",  // tag插件聚合首页</code>
+                                <code style="padding: 10px;margin: 20px 0;">"tag\/p([0-9]+)\.html" => "index.php?s=tag&page=$1",  // tag插件聚合首页分页</code>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('SEO标题')}</label>
+                            <div class="col-md-9">
+                                <textarea class="form-control " style="height:90px" name="data[index_seo_title]">{$data['index_seo_title']}</textarea>
+                                <span class="help-block">通配符：[第{page}页{join}]表示分页</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('SEO关键字')}</label>
+                            <div class="col-md-9">
+                                <textarea class="form-control " style="height:90px" name="data[index_seo_keywords]">{$data['index_seo_keywords']}</textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">{dr_lang('SEO描述信息')}</label>
+                            <div class="col-md-9">
+                                <textarea class="form-control " style="height:90px" name="data[index_seo_description]">{$data['index_seo_description']}</textarea>
+
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <div class="portlet-body form myfooter">
+        <div class="form-actions text-center">
+            <button type="button" onclick="dr_ajax_submit('{dr_now_url()}&page='+$('#dr_page').val(), 'myform', '2000')" class="btn green"> <i class="fa fa-save"></i> {dr_lang('保存')}</button>
+        </div>
+    </div>
+</form>
+{template "footer.html"}

@@ -28,7 +28,7 @@ class Module extends \Phpcmf\Common {
         $this->content_model = \Phpcmf\Service::M('Content', $this->dirname);
         $this->_module_init($this->dirname, $this->siteid);
         $user = (string)$_SERVER['HTTP_USER_AGENT'];
-        if (strpos($user, 'spider') !== false or strpos($user, 'bot') !== false) {
+        if (stripos($user, 'spider') !== false or strpos($user, 'bot') !== false) {
             $this->goto_404_page('蜘蛛禁止抓取');
         }
     }

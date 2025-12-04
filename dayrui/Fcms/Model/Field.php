@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Model;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -15,7 +15,33 @@ class Field extends \Phpcmf\Model {
 
     public $_table_field = [];
 
-    // 通过字段来查询表名称
+    /**
+     * 字段排序
+     **/
+    public function list_sort($field) {
+
+        if (!$field) {
+            return;
+        }
+
+        // 当displayorder有值时，按displayorder小到大排序，否则按id小到大排序
+        $dp = 0;
+        foreach ($field as $i => $t) {
+            $dp+= $t['displayorder'];
+        }
+        // 优化后的写法
+
+
+        if (!$dp) {
+            return $field;
+        }
+
+        return dr_array_sort($field, 'displayorder', 'asc');;
+    }
+
+    /**
+     * 通过字段来查询表名称
+     **/
     public function get_table_name($siteid, $field) {
 
         $table = '';
@@ -145,7 +171,9 @@ class Field extends \Phpcmf\Model {
         return str_replace('{siteid}', $siteid, $table);
     }
 
-    // 全部字段
+    /**
+     * 全部字段
+     **/
     public function get_all_field() {
         
         if (!$this->relatedname) {
@@ -196,7 +224,9 @@ class Field extends \Phpcmf\Model {
         return $rt;
     }
 
-    // 获取任意表的自定义字段
+    /**
+     * 获取任意表的自定义字段
+     **/
     public function get_mytable_field($table, $siteid = 0) {
 
         $name = 'my-table-'.$table;
@@ -221,7 +251,9 @@ class Field extends \Phpcmf\Model {
         return $value;
     }
 
-    // 获取网站信息的自定义字段
+    /**
+     * 获取网站信息的自定义字段
+     **/
     public function get_mysite_field($siteid = SITE_ID) {
 
         $name = 'my-site-'.$siteid;
@@ -246,7 +278,9 @@ class Field extends \Phpcmf\Model {
         return $value;
     }
 
-    // 删除字段
+    /**
+     * 删除字段
+     **/
     public function delete_field($ids) {
 
         foreach ($ids as $id) {
@@ -281,7 +315,7 @@ class Field extends \Phpcmf\Model {
      * @param	object	$field
      * @return	void
      */
-    public function add($data, $field) {
+    public function add($data, $field, $is_create = 1) {
 
         // 验证字段上限
         /*
@@ -294,8 +328,12 @@ class Field extends \Phpcmf\Model {
             }
         }*/
 
-        // 先读取sql语句
-        $sql = $field->create_sql($data['fieldname'], $data['setting']['option'], dr_safe_filename($data['name']));
+        if ($is_create) {
+            // 先读取sql语句
+            $sql = $field->create_sql($data['fieldname'], $data['setting']['option'], dr_safe_filename($data['name']));
+        } else {
+            $sql = '';
+        }
 
         // 当为编辑器类型时，关闭xss过滤
         //$data['fieldtype'] == 'Ueditor' && $data['setting']['validate']['xss'] = 1;
@@ -303,6 +341,7 @@ class Field extends \Phpcmf\Model {
         $data['ismain'] = (int)$data['ismain'];
         $data['setting'] = dr_array2string($data['setting']);
         $data['issystem'] = 0;
+        $data['isedit'] = 0;
         $data['issearch'] = (int)$data['issearch'];
         $data['ismember'] = (int)$data['ismember'];
         $data['disabled'] = (int)$data['disabled'];
@@ -398,6 +437,26 @@ class Field extends \Phpcmf\Model {
         }
 
         return $this->db->fieldExists($name, $table);
+    }
+
+    /**
+     * 是否是系统保留字段
+     */
+    public function is_sys_field($name) {
+
+        if (!$name)	{
+            return 1;
+        }
+
+        return in_array($name, [
+            'id',
+            'cat', 'category',
+            'top', 'content_page',
+            'pageid', 'params', 'page', 'pages',
+            'parent', 'urlrule', 'member', 'module',
+            'tags', 'tag', 'prev_page', 'app',
+            'next_page', 'fstatus', 'old', 'mid', 'groupid', 'related', 'kws', 'more'
+        ]);
     }
 
     //--------------------------------------------------------------------

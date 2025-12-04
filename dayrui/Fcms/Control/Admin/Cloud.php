@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Control\Admin;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -140,7 +140,7 @@ class Cloud extends \Phpcmf\Common {
     public function local() {
 
         if (SITE_ID > 1) {
-            $this->_admin_msg(0, '请切换到[主站点]操作');exit;
+            $this->_admin_msg(0, dr_lang('请切换到[主站点]操作'));exit;
         }
 
         $data = [];
@@ -192,15 +192,18 @@ class Cloud extends \Phpcmf\Common {
             }
         }
 
+        $menu = [
+            '本地应用' => [\Phpcmf\Service::L('Router')->class.'/'.\Phpcmf\Service::L('Router')->method, 'fa fa-puzzle-piece'],
+            'help' => [574],
+        ];
+        if (IS_DEV) {
+            $menu['应用市场'] = [\Phpcmf\Service::L('Router')->class.'/app', 'fa fa-cloud'];
+        }
+
         \Phpcmf\Service::V()->assign([
             'list' => $data,
-            'menu' => \Phpcmf\Service::M('auth')->_admin_menu(
-                [
-                    '本地应用' => [\Phpcmf\Service::L('Router')->class.'/'.\Phpcmf\Service::L('Router')->method, 'fa fa-puzzle-piece'],
-                    '应用市场' => [\Phpcmf\Service::L('Router')->class.'/app', 'fa fa-cloud'],
-                    'help' => [574],
-                ]
-            ),
+            'menu' => \Phpcmf\Service::M('auth')->_admin_menu($menu),
+            'dev_down_url' => $this->service_url.'&action=app&type=down&catid=15&',
         ]);
         \Phpcmf\Service::V()->display('cloud_app.html');
     }
@@ -317,7 +320,7 @@ return [
     function down_file() {
         \Phpcmf\Service::V()->assign([
             'ls' => intval($_GET['ls']),
-            'app_id' => 'app-'.intval($_GET['cid']),
+            'app_id' => 'app-'.dr_safe_replace($_GET['cid']),
         ]);
         \Phpcmf\Service::V()->display('cloud_down_file.html');exit;
     }
@@ -495,10 +498,14 @@ return [
         }
 
         if ($is_app) {
-            if ($is_module_app) {
-                $msg = '程序导入完成</p><p style="margin-top:20px;"><a href="javascript:dr_install_module_select(\''.dr_url('cloud/install', ['id' => $id, 'dir'=>$is_app]).'\');">立即安装应用插件</a>';
+            if ($id == 'app-xiazai_list' || $id == 'app-xiazailist') {
+                $msg = '程序导入完成</p><p style="margin-top:20px;"><a href="'.dr_url('cloud/app', ['id' => $id, 'dir'=>$is_app]).'">前往应用管理页面，安装多个应用插件</a>';
             } else {
-                $msg = '程序导入完成</p><p style="margin-top:20px;"><a href="javascript:dr_install_app(\''.dr_url('cloud/install', ['id' => $id, 'dir'=>$is_app]).'\', 0);">立即安装应用插件</a>';
+                if ($is_module_app) {
+                    $msg = '程序导入完成</p><p style="margin-top:20px;"><a href="javascript:dr_install_module_select(\''.dr_url('cloud/install', ['id' => $id, 'dir'=>$is_app]).'\');">立即安装应用插件</a>';
+                } else {
+                    $msg = '程序导入完成</p><p style="margin-top:20px;"><a href="javascript:dr_install_app(\''.dr_url('cloud/install', ['id' => $id, 'dir'=>$is_app]).'\', 0);">立即安装应用插件</a>';
+                }
             }
         } elseif ($is_tpl) {
             $msg = '模板导入完成</p><p style="margin-top:20px;"><a href="javascript:dr_load_ajax(\''.dr_lang('确定安装此模板到当前站点吗？').'\', \''.dr_url('cloud/install_tpl', ['id' => $id, 'dir'=>$is_tpl]).'\', 0);">立即安装模板</a>';
@@ -543,6 +550,8 @@ return [
         $data['phpcmf']['backup_tpl'] = $this->_is_backup_file(WRITEPATH.'backups/update/template/');
         $data['phpcmf']['backup_time'] = is_dir(WRITEPATH.'backups/update/cms/') ? dr_date(filemtime(WRITEPATH.'backups/update/cms/')) : '';
 
+        $data['module'] = [];
+
         $local = dr_dir_map(APPSPATH, 1);
         foreach ($local as $dir) {
             if (is_file(APPSPATH.$dir.'/Config/App.php')) {
@@ -568,6 +577,11 @@ return [
                 }
             }
         }
+
+        if (!dr_count($data['module'])) {
+            unset($data['module']);
+        }
+
 
         $menu = [
             '版本升级' => [\Phpcmf\Service::L('Router')->class.'/'.\Phpcmf\Service::L('Router')->method, 'fa fa-refresh'],
@@ -615,6 +629,11 @@ return [
             .'&get_http=1&time='.strtotime((string)$this->cmf_version['downtime'])
             .'&id='.$cid.'&isindex='.$index.'&version='
             .$vid.'&license='.$this->cmf_license['license'];
+        if ($index) {
+            // 首页检查附带部分插件
+            $surl.= '&extends='.dr_array2string($this->_get_app_version());
+        }
+
         $json = dr_catcher_data($surl);
         if (!$json) {
             $this->_json(0, '本站：没有从服务端获取到数据，检查本地环境是否支持远程下载功能');

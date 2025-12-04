@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Field;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -24,7 +24,7 @@ class Selects extends \Phpcmf\Library\A_Field {
 	 */
 	public function option($option) {
 
-        $option['options'] = isset($option['options']) ? $option['options'] : '选项名称1|1'.PHP_EOL.'选项名称2|2';
+        $option['options'] = isset($option['options']) ? $option['options'] : 'name1|1'.PHP_EOL.'name2|2';
 
 		return [
             $this->_search_field().'
@@ -36,6 +36,17 @@ class Selects extends \Phpcmf\Library\A_Field {
 					<span class="help-block">'.dr_lang('选项值建议使用从1开始的数字，不得带符号，也可以省略不写').'</span>
 				</div>
 			</div>
+			<div class="form-group">
+            <label class="col-md-2 control-label">'.dr_lang('多语言翻译').'</label>
+            <div class="col-md-9">
+                <div class="mt-radio-inline">
+                    <label class="mt-radio mt-radio-outline"><input type="radio" value="0" name="data[setting][option][lang]" '.(!$option['lang'] ? 'checked' : '').' > '.dr_lang('开启').' <span></span></label>
+                    &nbsp; &nbsp;
+                    <label class="mt-radio mt-radio-outline"><input type="radio" value="1" name="data[setting][option][lang]" '.($option['lang'] ? 'checked' : '').' > '.dr_lang('关闭').' <span></span></label>
+                </div>
+                <span class="help-block">'.dr_lang('开启后选项值被系统语言包翻译，否则就保持原样显示').'</span>
+            </div>
+        	</div>
 			<div class="form-group">
 				<label class="col-md-2 control-label">'.dr_lang('默认选中项').'</label>
 				<div class="col-md-9">
@@ -115,7 +126,7 @@ class Selects extends \Phpcmf\Library\A_Field {
 		$options = dr_format_option_array($field['setting']['option']['options']);
 		if ($options) {
             foreach ($options as $v => $n) {
-				$str.= '<option value="'.$v.'" '.(dr_in_array($v, $value) ? ' selected' : '').'>'.$n.'</option>';
+				$str.= '<option value="'.$v.'" '.(dr_in_array($v, $value) ? ' selected' : '').'>'.(isset($field['setting']['option']['lang']) && $field['setting']['option']['lang'] ?  $n : dr_lang($n)).'</option>';
 			}
 		}
 

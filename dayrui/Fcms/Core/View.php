@@ -1,7 +1,7 @@
 <?php namespace Phpcmf;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -54,6 +54,7 @@ class View {
     private $_page_used = 0; // 是否开启分页
 
     private $_list_tag = ''; // 循环体标签
+    private $_list_param = []; // 标签参数
     private $_list_where = []; // 循环体解析的条件数组
     private $_list_error = []; // 循环标签遇到的错误
     private $_is_list_search = 0; // 搜索标签
@@ -294,6 +295,9 @@ class View {
             unset($this->_include_file);
             if (!$is_dev) {
                 unset($this->_options);
+            }
+            if (!defined('IS_INSTALL') && (CI_DEBUG || !defined('SC_HTML_FILE'))) {
+                \Phpcmf\Service::M()->close();
             }
         }
     }
@@ -815,6 +819,7 @@ class View {
 
         $_params = trim($_params);
         $this->_list_tag = '{list '.$_params.'}';
+        $this->_list_param = [];
 
         // 过滤掉自定义where语句
         if (preg_match('/where=\'(.+)\'/sU', $_params, $match)) {
@@ -883,6 +888,7 @@ class View {
                 }
                 $param[$var] = $val; // 用于特殊action
             }
+            $this->_list_param[$var] = $val;
         }
 
         // return位置判断
@@ -920,9 +926,9 @@ class View {
         $this->_page_value = $system['page'];
 
         if (in_array(strtoupper($system['order']), ['RAND()', 'RAND'])) {
-            $cache_name = 'view-'.$this->_return_sql.md5($_params.dr_now_url().$this->_get_page_id($system['page']).$this->_is_mobile);
+            $cache_name = 'view-'.IS_CLIENT.'-'.$this->_return_sql.md5($_params.dr_now_url().$this->_get_page_id($system['page']).$this->_is_mobile);
         } else {
-            $cache_name = 'view-'.$this->_return_sql.($system['page'] ? $this->_get_page_id($system['page']) : 'one').md5($_params.$this->_is_mobile);
+            $cache_name = 'view-'.IS_CLIENT.'-'.$this->_return_sql.($system['page'] ? $this->_get_page_id($system['page']) : 'one').md5($_params.$this->_is_mobile);
         }
 
         if (!CI_DEBUG && SYS_CACHE && $system['cache']) {
@@ -1189,6 +1195,13 @@ class View {
                         return $this->_return($system['return'], $rt['msg']);
                     }
                     list($system, $where, $_order, $sql_from) = $rt['data'];
+                }
+                // catid 参数
+                if ($system['catid']) {
+                    $where[] = [
+                        'adj' => 'SQL',
+                        'value' => urldecode('`'.$table.'`.`catid` IN ('.$system['catid'].')')
+                    ];
                 }
 
                 $sql_limit = $pages = '';
@@ -1496,13 +1509,7 @@ class View {
                             if ($arr) {
                                 foreach ($arr as $value) {
                                     if ($value) {
-                                        if (version_compare(\Phpcmf\Service::M()->db->getVersion(), '5.7.0') < 0) {
-                                            // 兼容写法
-                                            $vals[] = "{$t['name']} LIKE \"%\\\"".\Phpcmf\Service::M()->db->escapeString(dr_safe_replace($value), true)."\\\"%\"";
-                                        } else {
-                                            // 高版本写法
-                                            $vals[] = "(CASE WHEN JSON_VALID({$t['name']}) THEN JSON_CONTAINS ({$t['name']}->'$[*]', '\"".dr_safe_replace($value)."\"', '$') ELSE null END)";
-                                        }
+                                        $vals[] = \Phpcmf\Service::M()->where_json('', $t['name'], \Phpcmf\Service::M()->db->escapeString(dr_safe_replace($value), true));
                                     }
                                 }
                             }
@@ -1522,7 +1529,7 @@ class View {
                             $arr = explode('|', $t['value']);
                             foreach ($arr as $v) {
                                 if ($v) {
-                                    if (!is_numeric($v)) {
+                                    if (!dr_is_numeric($v)) {
                                         $v = "'".$v."'";
                                     }
                                     $vals[] = " FIND_IN_SET (".$v.", {$t['name']})";
@@ -1549,7 +1556,7 @@ class View {
                                    } else {
                                        $value = '%'.trim($value, '%').'%'; // 首尾%查询
                                    }
-                                   $vals[]= "{$t['name']} LIKE \"".$value."\"";
+                                   $vals[]= "{$t['name']} LIKE '".$value."'";
                                }
                            }
                         }
@@ -1563,8 +1570,8 @@ class View {
                         $arr = explode(',', dr_safe_replace($t['value']));
                         $str = '';
                         foreach ($arr as $a) {
-                            if (!is_numeric($a)) {
-                                $str.= ',"'.$a.'"';
+                            if (!dr_is_numeric($a)) {
+                                $str.= ',\''.$a.'\'';
                             } else {
                                 $str.= ','.$a;
                             }
@@ -1576,8 +1583,8 @@ class View {
                         $arr = explode(',', dr_safe_replace($t['value']));
                         $str = '';
                         foreach ($arr as $a) {
-                            if (!is_numeric($a)) {
-                                $str.= ',"'.$a.'"';
+                            if (!dr_is_numeric($a)) {
+                                $str.= ',\''.$a.'\'';
                             } else {
                                 $str.= ','.$a;
                             }
@@ -1586,7 +1593,7 @@ class View {
                         break;
 
                     case 'NOT':
-                        $string.= $join.(is_numeric($t['value']) ? " {$t['name']} <> ".$t['value'] : " {$t['name']} <> \"".($t['value'] == "''" ? '' : dr_safe_replace($t['value']))."\"");
+                        $string.= $join.(dr_is_numeric($t['value']) ? " {$t['name']} <> ".$t['value'] : " {$t['name']} <> '".($t['value'] == "''" ? '' : dr_safe_replace($t['value']))."'");
                         break;
 
                     case 'BEWTEEN':
@@ -1772,7 +1779,7 @@ class View {
                         } elseif (!$t['name'] && $t['value']) {
                             $string.= $join.' '.$t['value'];
                         } else {
-                            $string.= $join.(is_numeric($t['value']) ? " {$t['name']} = ".$t['value'] : " {$t['name']} = \"".($t['value'] == "''" ? '' : dr_safe_replace($t['value']))."\"");
+                            $string.= $join.(dr_is_numeric($t['value']) ? " {$t['name']} = ".intval($t['value']) : " {$t['name']} = '".($t['value'] == "''" ? '' : dr_safe_replace($t['value']))."'");
                         }
                         break;
                 }
@@ -1907,7 +1914,7 @@ class View {
     // 获取分页页数
     private function _get_page_id($page) {
 
-        if (is_numeric($page)) {
+        if (dr_is_numeric($page)) {
             return max(1, (int)$_GET['page']);
         } else {
             return max(1, isset($_GET[$page]) ? (int)$_GET[$page] : 0);
@@ -2124,6 +2131,12 @@ class View {
                 'return_'.$this->_return_sql => $data,
             ];
         } else {
+            if ($data) {
+                $rt2 = \Phpcmf\Hooks::trigger_callback('view_return', $data, $this->_list_tag, $this->_list_param);
+                if ($rt2 && isset($rt2['code']) && $rt2['code']) {
+                    $data = $rt2['data'];
+                }
+            }
             if (CI_DEBUG) {
                 $debug.= '<p>总记录数：'.$total.'</p>';
                 if ($this->_page_used) {

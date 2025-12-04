@@ -1,7 +1,7 @@
 <?php namespace Phpcmf;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -142,12 +142,7 @@ class Table extends \Phpcmf\Common {
             }
         }
 
-        $field && uasort($field, function($a, $b){
-            if($a['displayorder'] == $b['displayorder']){
-                return 0;
-            }
-            return($a['displayorder']<$b['displayorder']) ? -1 : 1;
-        });
+        $field = dr_array_sort($field, 'displayorder', 'asc');
 
         foreach ($field as $i => $t) {
             if ($t['setting']['is_right'] == 1) {
@@ -824,7 +819,7 @@ class Table extends \Phpcmf\Common {
             ];
             if ($this->_is_admin_auth('del') && $this->is_recycle && method_exists($this, 'recycle_del')) {
                 // 回收站按钮
-                $this->mytable['foot_tpl'].= '<label><button type="button" onclick="javascript:dr_iframe_show(\''.dr_lang('回收站').'\', \''.dr_url($uriprefix.'/recycle_del').'\');" class="btn green btn-sm"> <i class="fa fa-recycle"></i> '.dr_lang('回收站').'</button></label>';
+                $this->mytable['foot_tpl'].= '<label><button type="button" onclick="javascript:dr_iframe_show(\''.dr_lang('回收站').'\', \''.(IS_ADMIN ? dr_url($uriprefix.'/recycle_del') : dr_member_url($uriprefix.'/recycle_del')).'\');" class="btn green btn-sm"> <i class="fa fa-recycle"></i> '.dr_lang('回收站').'</button></label>';
             }
             if (!$this->my_clink && $this->_is_admin_auth('edit')) {
                 $lurl = (IS_ADMIN ? dr_url($uriprefix.'/edit') : dr_member_url($uriprefix.'/edit')).'&id={id}';
@@ -928,6 +923,9 @@ class Table extends \Phpcmf\Common {
     protected function _Recycle_Init() {
         $table = $this->init['table'];
         $rtable = $table.'_recycle';
+        if (strpos($rtable, '_recycle_recycle')) {
+            $rtable = str_replace($rtable, '_recycle_recycle', '_recycle');
+        }
         if (!$this->_db()->is_table_exists($rtable)) {
             // 回收表不存在时创建新表
             $this->_db()->query('

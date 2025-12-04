@@ -112,6 +112,18 @@ class Module extends \Phpcmf\Common {
             } elseif ($get['keyword'] && $this->module['setting']['search']['maxlength']
                 && dr_strlen($get['keyword']) > (int)$this->module['setting']['search']['maxlength']) {
                 $this->_msg(0, dr_lang('关键字不得大于系统规定的长度'));
+            } elseif (isset($this->module['setting']['search']['search_time'])
+                && $this->module['setting']['search']['search_time']
+                && $get['page'] <= 1) {
+                $cname = 'search_time_'.APP_DIR.$this->uid.USER_HTTP_CODE.md5(dr_array2string($get));
+                $ctime = \Phpcmf\Service::L('cache')->get_auth_data($cname);
+                if (!$ctime) {
+                    \Phpcmf\Service::L('cache')->set_auth_data($cname, SYS_TIME);
+                } elseif (SYS_TIME - $ctime < $this->module['setting']['search']['search_time']) {
+                    $this->_msg(0, dr_lang('搜索间隔时间过短，请稍后再试'));
+                } else {
+                    \Phpcmf\Service::L('cache')->set_auth_data($cname, SYS_TIME);
+                }
             }
         }
 
@@ -574,8 +586,6 @@ class Module extends \Phpcmf\Common {
             1
         );
 
-        $data = dr_array22array($data, $this->content_model->_format_show_seo($this->module, $data, $page));
-
         if (method_exists($this->content_model, '_call_show_after')) {
             $data = $this->content_model->_call_show_after($data);
         }
@@ -586,6 +596,8 @@ class Module extends \Phpcmf\Common {
         if ($rt2 && isset($rt2['code']) && $rt2['code']) {
             $data = $rt2['data'];
         }
+
+        $data = dr_array22array($data, $this->content_model->_format_show_seo($this->module, $data, $page));
 
         // 传入模板
         \Phpcmf\Service::V()->assign($data);

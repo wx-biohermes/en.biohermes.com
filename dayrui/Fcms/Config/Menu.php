@@ -1,7 +1,7 @@
 <?php
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件
  **/
 
@@ -148,9 +148,30 @@ return [
                     'icon' => 'fa fa-cog',
                     'link' => [
                         [
+                            'name' => '项目设置',
+                            'icon' => 'fa fa-cog',
+                            'uri' => 'site_config/index',
+                        ],
+                        [
+                            'name' => '手机设置',
+                            'icon' => 'fa fa-mobile',
+                            'uri' => 'site_mobile/index',
+                        ],
+                        [
+                            'name' => '域名绑定',
+                            'icon' => 'fa fa-globe',
+                            'uri' => 'site_domain/index',
+                        ],
+                        [
                             'name' => '项目信息',
                             'icon' => 'fa fa-cog',
                             'uri' => 'site_param/index',
+                        ],
+                        [
+                            'name' => '图片设置',
+                            'icon' => 'fa fa-photo',
+                            'uri' => 'site_image/index',
+                            'displayorder' => 9
                         ],
                     ]
                 ]
@@ -257,11 +278,6 @@ return [
                             'name' => '版本升级',
                             'icon' => 'fa fa-refresh',
                             'uri' => 'cloud/update',
-                        ],
-                        [
-                            'name' => '文件对比',
-                            'icon' => 'fa fa-code',
-                            'uri' => 'cloud/bf',
                         ],
                     ]
                 ],

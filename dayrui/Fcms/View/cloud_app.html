@@ -65,6 +65,11 @@
                     <label>
                         <a class="btn blue btn-xs" href="javascript:dr_iframe_show('{dr_lang('文件浏览')}', '{dr_url('cloud/app_file', ['dir'=>$dir])}', '600px', '320px');"> <i class="fa fa-file-o"></i> {dr_lang('文件')}</a>
                     </label>
+                    {if IS_DEV && $t.id && !$is_oem}
+                    <label>
+                    <a href="{$dev_down_url}&id={$t.id}" class="btn red btn-xs"> <i class="fa fa-cloud"></i> {dr_lang('应用市场')}</a>
+                    </label> 
+                    {/if}
                 </td>
             </tr>
             {php $i++;}
@@ -97,7 +102,6 @@
             area: ['80%', '80%'],
             content: '{dr_url("cloud/log_show")}&id='+id+'&version='+v,
         });
-    }
-
+    }     
 </script>
 {template "footer.html"}

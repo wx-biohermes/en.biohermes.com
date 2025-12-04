@@ -29,7 +29,7 @@ class Link extends \Phpcmf\Common
                     '插件配置' => [APP_DIR.'/link/index', 'fa fa-link'],
                 ]
             ),
-            'domain' => $domain,
+            'domain' => $domain ? $domain : [],
         ]);
         \Phpcmf\Service::V()->display('link.html');
     }

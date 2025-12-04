@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Library;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -50,7 +50,7 @@ class Api {
         }
 
         if (IS_POST) {
-            $name = \Phpcmf\Service::L('input')->post('name');
+            $name = dr_rp((string)\Phpcmf\Service::L('input')->post('name', true), '.php', '');
             if (!$name) {
                 \Phpcmf\Service::C()->_json(0, dr_lang('附件名称不能为空'));
             }
@@ -122,7 +122,7 @@ class Api {
 
             // 文件真实地址
             if ($info['remote']) {
-                $remote = $this->get_cache('attachment', $info['remote']);
+                $remote = \Phpcmf\Service::C()->get_cache('attachment', $info['remote']);
                 if (!$remote) {
                     // 远程地址无效
                     \Phpcmf\Service::C()->_json(0, dr_lang('自定义附件（%s）的配置已经不存在', $info['remote']));
@@ -433,52 +433,127 @@ class Api {
 
         if (IS_AJAX_POST) {
             $p = (int)\Phpcmf\Service::L('input')->post('is_page');
-            $ids = \Phpcmf\Service::L('input')->get_post_ids($p ? 'ids'.$p : 'ids0');
-            if (!$ids) {
-                \Phpcmf\Service::C()->_json(0, dr_lang('没有选择文件'));
-            } elseif (dr_count($ids) > $ct - $c) {
-                \Phpcmf\Service::C()->_json(0, dr_lang('只能选择%s个文件，当前已选择%s个', $ct - $c, dr_count($ids)));
-            }
             $list = [];
-            if ($p == 2) {
-                // 文件模式
-                $ids = \Phpcmf\Service::L('input')->post('ids2');
-                foreach ($ids as $t) {
-                    $file = trim(str_replace('..', '', $t));
-                    $url = dr_get_file($file);
-                    $ext = trim(strtolower(strrchr($file, '.')), '.');
-                    $list[] = [
-                        'id' => $url,
-                        'name' => basename($t),
-                        'file' => $url,
-                        'url' => $url,
-                        'exturl' => is_file(ROOTPATH.'static/assets/images/ext/'.$ext.'.png') ? ROOT_THEME_PATH.'assets/images/ext/'.$ext.'.png' : '',
-                        'preview' => dr_file_preview_html($file, 0),
-                        'upload' => '<input type="file" name="file_data"></button>',
-                    ];
+            if ($p == 3) {
+                $post = \Phpcmf\Service::L('input')->post('data');
+                if (empty($post['url'])) {
+                    \Phpcmf\Service::C()->_json(0, dr_lang('文件地址不能为空'));
                 }
-            } else {
-                // 归档附件
-                $db = \Phpcmf\Service::M()->table($p ? 'attachment_data' : 'attachment_unused');
-                !$is_admin && $db->where('uid', $this->uid);
-                $temp = $db->where_in('id', $ids)->getAll();
-                foreach ($temp as $t) {
-                    $url = dr_get_file($t['id']);
-                    if ($t['remote'])  {
-                        $remote = \Phpcmf\Service::C()->get_cache('attachment', $t['remote']);
-                        if ($remote && $remote['value']['image']) {
-                            $url.= $remote['value']['image'];
+                $post['url'] = trim($post['url']);
+                if ($post['down']) {
+                    if (strpos($post['url'], 'http') !== 0 ) {
+                        \Phpcmf\Service::C()->_json(0, dr_lang('下载文件地址必须是https或者http开头'));
+                    }
+                    // 获取扩展名
+                    $ext = str_replace('.', '', trim(strtolower(strrchr($post['url'], '.')), '.'));
+                    if (strlen($ext) > 6) {
+                        foreach (['jpg', 'jpeg', 'png', 'gif', 'webp'] as $i) {
+                            if (strpos($post['url'], $i) !== false) {
+                                $ext = $i;
+                                break;
+                            }
+                        }
+                        if (strlen($ext) > 6) {
+                            $ext2 = str_replace('#', '', trim(strtolower(strrchr($post['url'], '#')), '#'));
+                            if ($ext2) {
+                                $ext = $ext2;
+                                $post['url'] = substr($post['url'], 0, strlen($post['url'])-strlen($ext2)-1);
+                            }
+                        }
+                        if (strlen($ext) > 6 || !$ext) {
+                            \Phpcmf\Service::C()->_json(0, dr_lang('无法获取到文件扩展名，请在URL后方加入扩展名字符串，例如：#jpg'));
                         }
                     }
+                    // 验证上传权限
+                    $this->check_upload_auth();
+                    // 下载远程文件
+                    $rt = \Phpcmf\Service::L('upload')->down_file([
+                        'url' => $post['url'],
+                        'file_ext' => $ext,
+                        'attachment' => \Phpcmf\Service::M('Attachment')->get_attach_info((int)$p['attachment'], (int)$p['image_reduce']),
+                    ]);
+                    if (!$rt['code']) {
+                        exit(dr_array2string($rt));
+                    }
+
+                    // 附件归档
+                    $att = \Phpcmf\Service::M('Attachment')->save_data($rt['data']);
+                    if (!$att['code']) {
+                        exit(dr_array2string($att));
+                    }
+
                     $list[] = [
-                        'id' => $t['id'],
-                        'name' => $t['filename'],
-                        'file' => $t['attachment'],
-                        'url' => $url,
-                        'exturl' => is_file(ROOTPATH.'static/assets/images/ext/'.$t['fileext'].'.png') ? ROOT_THEME_PATH.'assets/images/ext/'.$t['fileext'].'.png' : '',
-                        'preview' => dr_file_preview_html(dr_get_file_url($t), $t['id']),
+                        'id' => $att['code'],
+                        'name' => $rt['data']['name'],
+                        'file' => $rt['data']['file'],
+                        'url' => $rt['data']['url'],
+                        'exturl' => is_file(ROOTPATH.'static/assets/images/ext/'.$rt['data']['ext'].'.png') ? ROOT_THEME_PATH.'assets/images/ext/'.$rt['data']['ext'].'.png' : '',
+                        'preview' => dr_file_preview_html($rt['data']['url'], $att['code']),
                         'upload' => '<input type="file" name="file_data"></button>',
                     ];
+                } else {
+                    $list[] = [
+                        'id' => $post['url'],
+                        'url' => $post['url'],
+                        'name' => $post['name'] ? htmlspecialchars($post['name']) : $post['url'],
+                        'file' => htmlspecialchars($post['url']),
+                        'preview' => dr_file_preview_html($post['url']),
+                        'upload' => '',
+                    ];
+                }
+                $data = [
+                    'count' => 1,
+                    'result' => $list,
+                ];
+                \Phpcmf\Service::C()->_json(1, dr_lang('已选择%s个文件', $data['count']), $data);
+                exit;
+            } else {
+                $ids = \Phpcmf\Service::L('input')->get_post_ids($p ? 'ids'.$p : 'ids0');
+                if (!$ids) {
+                    \Phpcmf\Service::C()->_json(0, dr_lang('没有选择文件'));
+                } elseif (dr_count($ids) > $ct - $c) {
+                    \Phpcmf\Service::C()->_json(0, dr_lang('只能选择%s个文件，当前已选择%s个', $ct - $c, dr_count($ids)));
+                }
+                if ($p == 2) {
+                    // 文件模式
+                    $ids = \Phpcmf\Service::L('input')->post('ids2');
+                    foreach ($ids as $t) {
+                        $file = trim(str_replace('..', '', $t));
+                        $url = dr_get_file($file);
+                        $ext = trim(strtolower(strrchr($file, '.')), '.');
+                        $list[] = [
+                            'id' => $url,
+                            'name' => basename($t),
+                            'file' => $url,
+                            'url' => $url,
+                            'exturl' => is_file(ROOTPATH.'static/assets/images/ext/'.$ext.'.png') ? ROOT_THEME_PATH.'assets/images/ext/'.$ext.'.png' : '',
+                            'preview' => dr_file_preview_html($file, 0),
+                            'upload' => '<input type="file" name="file_data"></button>',
+                        ];
+                    }
+                } else {
+                    // 归档附件
+                    $db = \Phpcmf\Service::M()->table($p ? 'attachment_data' : 'attachment_unused');
+                    !$is_admin && $db->where('uid', $this->uid);
+                    $temp = $db->where_in('id', $ids)->getAll();
+                    foreach ($temp as $t) {
+                        $url = dr_get_file($t['id']);
+                        if ($t['remote'])  {
+                            $remote = \Phpcmf\Service::C()->get_cache('attachment', $t['remote']);
+                            if ($remote && $remote['value']['image']) {
+                                $url.= $remote['value']['image'];
+                            }
+                        }
+                        $list[] = [
+                            'id' => $t['id'],
+                            'name' => $t['filename'],
+                            'file' => $t['attachment'],
+                            'url' => $url,
+                            'exturl' => is_file(ROOTPATH.'static/assets/images/ext/'.$t['fileext'].'.png') ? ROOT_THEME_PATH.'assets/images/ext/'.$t['fileext'].'.png' : '',
+                            'preview' => dr_file_preview_html(dr_get_file_url($t), $t['id']),
+                            'upload' => '<input type="file" name="file_data"></button>',
+                        ];
+                    }
                 }
             }
 
@@ -509,7 +584,7 @@ class Api {
             if ($name == 'id') {
                 $where[] = 'id='.intval($value);
             } else {
-                $where[] = $name.' LIKE "%'.$value.'%"';
+                $where[] = $name.' LIKE \'%'.$value.'%\'';
             }
             $list['used'] = urlencode(implode(' AND ', $where));
         } else {
@@ -526,7 +601,7 @@ class Api {
             .'&ct='.$ct
             .'&p='.\Phpcmf\Service::L('input')->get('p');
         $pp = intval($_GET['pp']);
-        $pp = $unused ? $pp : ($pp == 2 ? 2 : 1);
+        $pp = $unused ? $pp : (in_array($pp, [2,3]) ? $pp : 1);
 
         $listurl = dr_web_prefix('index.php?is_iframe=1&s=api&c=file&m=file_list')
             .'&fid='.\Phpcmf\Service::L('input')->get('fid')
@@ -988,6 +1063,73 @@ class Api {
         ]);
 
         \Phpcmf\Service::C()->_json(1, dr_web_prefix(''.(IS_ADMIN ? SELF.'?c=api' : 'index.php?s=api&c=file').'&m=down_img_list&vid='.$vid));
+    }
+
+    /**
+     * 视频外链解析
+     */
+    public function video_link() {
+
+        // 验证上传权限
+        $this->check_upload_auth();
+
+        $url = XR_L('input')->post('url');
+        if (!$url) {
+            \Phpcmf\Service::C()->_json(0, dr_lang('视频地址不能为空'));
+        }
+
+        // 各平台正则
+        $ytRegExp = '/\/\/(?:(?:www|m)\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w|-]{11})(?:(?:[\?&]t=)(\S+))?$/';
+        $ytRegExpForStart = '/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/';
+        $igRegExp = '/(?:www\.|\/\/)instagram\.com\/p\/(.[a-zA-Z0-9_-]*)/';
+        $vRegExp = '/\/\/vine\.co\/v\/([a-zA-Z0-9]+)/';
+        $vimRegExp = '/\/\/(player\.)?vimeo\.com\/([a-z]*\/)*(\d+)[?]?.*/';
+        $dmRegExp = '/.+dailymotion.com\/(video|hub)\/([^_]+)[^#]*(#video=([^_&]+))?/';
+        $youkuRegExp = '/\/\/v\.youku\.com\/v_show\/id_(\w+)=*\.html/';
+        $qqRegExp = '/\/\/v\.qq\.com.*?vid=(.+)/';
+        $qqRegExp2 = '/\/\/v\.qq\.com\/x?\/?(page|cover).*?\/([^\/]+)\.html\??.*/';
+        $mp4RegExp = '/^.+\.(mp4|m4v)$/';
+        $oggRegExp = '/^.+\.(ogg|ogv)$/';
+        $webmRegExp = '/^.+\.(webm)$/';
+        $fbRegExp = '/(?:www\.|\/\/)facebook\.com\/([^\/]+)\/videos\/([0-9]+)/';
+
+        // 匹配
+        if (preg_match($ytRegExp, $url, $ytMatch) && strlen($ytMatch[1]) === 11) {
+            $youtubeId = $ytMatch[1];
+            $start = 0;
+            if (isset($ytMatch[2])) {
+                if (preg_match($ytRegExpForStart, $ytMatch[2], $ytMatchForStart)) {
+                    $n = [3600, 60, 1];
+                    for ($i = 0; $i < count($n); $i++) {
+                        $start += isset($ytMatchForStart[$i + 1]) ? $n[$i] * intval($ytMatchForStart[$i + 1]) : 0;
+                    }
+                }
+            }
+            $src = '//www.youtube.com/embed/' . $youtubeId . ($start > 0 ? '?start=' . $start : '');
+            $html = '<iframe frameborder="0" src="' . $src . '" width="640" height="360"></iframe>';
+        } elseif (preg_match($igRegExp, $url, $igMatch)) {
+            $html = '<iframe frameborder="0" src="https://instagram.com/p/' . $igMatch[1] . '/embed/" width="612" height="710" scrolling="no" allowtransparency="true"></iframe>';
+        } elseif (preg_match($vRegExp, $url, $vMatch)) {
+            $html = '<iframe frameborder="0" src="' . $vMatch[0] . '/embed/simple" width="600" height="600" class="vine-embed"></iframe>';
+        } elseif (preg_match($vimRegExp, $url, $vimMatch) && strlen($vimMatch[3])) {
+            $html = '<iframe webkitallowfullscreen mozallowfullscreen allowfullscreen frameborder="0" src="//player.vimeo.com/video/' . $vimMatch[3] . '" width="640" height="360"></iframe>';
+        } elseif (preg_match($dmRegExp, $url, $dmMatch) && strlen($dmMatch[2])) {
+            $html = '<iframe frameborder="0" src="//www.dailymotion.com/embed/video/' . $dmMatch[2] . '" width="640" height="360"></iframe>';
+        } elseif (preg_match($youkuRegExp, $url, $youkuMatch) && strlen($youkuMatch[1])) {
+            $html = '<iframe webkitallowfullscreen mozallowfullscreen allowfullscreen frameborder="0" height="498" width="510" src="//player.youku.com/embed/' . $youkuMatch[1] . '"></iframe>';
+        } elseif ((preg_match($qqRegExp, $url, $qqMatch) && strlen($qqMatch[1])) || (preg_match($qqRegExp2, $url, $qqMatch2) && strlen($qqMatch2[2]))) {
+            $vid = (isset($qqMatch[1]) && strlen($qqMatch[1])) ? $qqMatch[1] : $qqMatch2[2];
+            $html = '<iframe webkitallowfullscreen mozallowfullscreen allowfullscreen frameborder="0" height="310" width="500" src="https://v.qq.com/txp/iframe/player.html?vid=' . $vid . '&amp;auto=0"></iframe>';
+        } elseif (preg_match($mp4RegExp, $url) || preg_match($oggRegExp, $url) || preg_match($webmRegExp, $url)) {
+            $html = '<video controls src="' . htmlspecialchars($url) . '" width="640" height="360"></video>';
+        } elseif (preg_match($fbRegExp, $url, $fbMatch)) {
+            $html = '<iframe frameborder="0" src="https://www.facebook.com/plugins/video.php?href=' . urlencode($fbMatch[0]) . '&show_text=0&width=560" width="560" height="301" scrolling="no" allowtransparency="true"></iframe>';
+        } else {
+            // 未知视频链接
+            \Phpcmf\Service::C()->_json(0, dr_lang('视频地址系统目前不支持'));
+        }
+
+        \Phpcmf\Service::C()->_json(1, $html);
     }
 
 

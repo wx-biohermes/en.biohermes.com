@@ -366,7 +366,7 @@ class Site extends \Phpcmf\Model {
 
         if (!$page) {
             // 全局系统缓存
-            dr_dir_delete(WRITEPATH.'data');
+            #dr_dir_delete(WRITEPATH.'data');
             \Phpcmf\Service::M('site')->cache(0, $site_cache, $module_cache);
             foreach (['auth', 'email', 'member', 'attachment', 'system'] as $m) {
                 \Phpcmf\Service::M($m)->cache();
@@ -514,14 +514,14 @@ class Site extends \Phpcmf\Model {
         } else {
             $path = ROOTPATH;
         }
-        if ($t['setting']['client']) {
+        if ($t['setting']['client'] && !dr_is_app('client')) {
             foreach ($t['setting']['client'] as $c) {
                 if ($c['name'] && $c['domain']) {
                     $rt = $this->update_webpath('Client', $path.$c['name'].'/', [
                         'CLIENT' => $c['name'],
                         'SITE_ID' => $t['id'],
                         'FIX_WEB_DIR' => $c['domain'] == $t['domain'].'/'.$c['name'] ? $c['name'] : '',
-                        'SITE_FIX_WEB_DIR' => $t['id'] > 1 && $t['setting']['webpath'] && strpos($t['setting']['webpath'], '/') === false && strpos($t['domain'], $t['setting']['webpath']) !== false ? $t['setting']['webpath'] : '',
+                        'SITE_FIX_WEB_DIR' => $t['setting']['webpath'] && strpos($t['setting']['webpath'], '/') === false && strpos($t['domain'], $t['setting']['webpath']) !== false ? $t['setting']['webpath'] : '',
                     ]);
                     if ($rt) {
                         $this->_error_msg('网站['.$t['domain'].']的终端['.$c['name'].']: '.$rt);

@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Model;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -134,7 +134,8 @@ class Auth extends \Phpcmf\Model {
                 return dr_return_data(0, IS_DEV ? dr_lang('账号[%s]不存在', $username) : dr_lang('登录失败'), 1);
             } elseif (!$password) {
                 return dr_return_data(0, IS_DEV ? dr_lang('密码不能为空') : dr_lang('登录失败'), 2);
-            } elseif (IS_API_HTTP && md5(md5($password).$data['salt'].md5($password)) == $data['password']) {
+            }
+            if (IS_API_HTTP && md5(md5($password).$data['salt'].md5($password)) == $data['password']) {
                 $password = md5($password);
             }
             if (!IS_API_HTTP && defined('SYS_ADMIN_LOGIN_AES') && SYS_ADMIN_LOGIN_AES) {
@@ -160,9 +161,12 @@ class Auth extends \Phpcmf\Model {
                 return dr_return_data(0, IS_DEV ? dr_lang('密码不正确') : dr_lang('登录失败'), 3);
             }
             if ($check && $data['phone']) {
-                return dr_return_data(9, $data['phone'], $data);
+                return dr_return_data("sms", $data['phone'], $data);
             }
         } else {
+            if (!$password) {
+                return dr_return_data(0, IS_DEV ? dr_lang('手机不能为空') : dr_lang('登录失败'), 2);
+            }
             $data = $this->db
                 ->table('member')
                 ->where('phone', $password)
@@ -415,6 +419,9 @@ class Auth extends \Phpcmf\Model {
 
             $rt = \Phpcmf\Hooks::trigger_callback('admin_login_check', $data, $verify);
             if ($rt && isset($rt['code']) && !$rt['code']) {
+                \Phpcmf\Service::C()->session()->remove('uid');
+                \Phpcmf\Service::C()->session()->remove('admin');
+                \Phpcmf\Service::C()->session()->remove('siteid');
                 return dr_return_data(0, $rt['msg']);
             }
         }
@@ -645,9 +652,10 @@ class Auth extends \Phpcmf\Model {
      * 判断是否具有操作权限
      *
      * @param	string	$uri
+     * @param	bool	$is_index 是否后台首页
      * @return	bool	有权限返回TRUE，否则返回FALSE
      */
-    public function _is_admin_auth($uri = '') {
+    public function _is_admin_auth($uri = '', $is_index = 0) {
 
         $uri = trim((string)$uri, '/');
 
@@ -670,7 +678,7 @@ class Auth extends \Phpcmf\Model {
             // 补全控制器
             $uri = strpos($uri, '/') !== false ? $uri : (\Phpcmf\Service::L('router')->class.'/'.$uri);
             // 补全项目目录
-            APP_DIR && strpos($uri, APP_DIR.'/') === false && $uri = APP_DIR.'/'.$uri;
+            APP_DIR && substr_count(trim($uri, '/'), '/') == 1 && $uri = APP_DIR.'/'.$uri;
         }
 
         // 分隔URI判断权限
@@ -732,7 +740,7 @@ class Auth extends \Phpcmf\Model {
         }
 
         // 验证应用插件的权限
-        if (substr_count($this_uri, '/') == 2) {
+        if (!$is_index && substr_count($this_uri, '/') == 2) {
             list($dir, $c, $m) = explode('/', $this_uri);
             $path = dr_get_app_dir($dir);
             if (is_file($path.'Models/Auth.php')) {

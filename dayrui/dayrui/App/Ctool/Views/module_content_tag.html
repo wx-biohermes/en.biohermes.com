@@ -1,0 +1,45 @@
+{template "header.html"}
+
+<form id="myform" class="form-horizontal" style="padding: 0 30px;">
+    <div class="form-body">
+
+        <div class="form-group">
+            <div class="note note-danger">
+                <p>{dr_lang('本能需要安装插件：关键词拆分、关键词Tag、百度API等其中任意一个即可')}</p>
+            </div>
+            {$select}
+        </div>
+        <div class="form-actions">
+            <div class="row">
+                <div class="col-md-12" style="text-align:left">
+                    <div class="form-group" style="margin-bottom:5px">
+                        <label> {dr_lang('提取范围')} </label>
+                    </div>
+                    <div class="form-group">
+                        <div class="mt-radio-inline">
+                            <label class="mt-radio">
+                                <input type="radio" name="keyword"  value="1" checked=""> {dr_lang('只提取空词的内容')}
+                                <span></span>
+                            </label>
+                            <label class="mt-radio">
+                                <input type="radio" name="keyword" value="0"> {dr_lang('重新提取全部内容')}
+                                <span></span>
+                            </label>
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+                        <button type="button" onclick="dr_content_submit_todo()" class="btn blue"> <i class="fa fa-tag"></i> {dr_lang('立即执行')}</button>
+                        <a class="btn red" href="javascript:dr_iframe_show('测试分词结果', '{dr_url(APP_DIR.'/api/test_kw')}');"> 测试分词 </a>
+                    </div>
+                </div>
+        </div>
+    </div>
+</form>
+<script>
+    function dr_content_submit_todo() {
+        window.location.href = '{$todo_url}&'+$('#myform').serialize()
+    }
+</script>
+
+{template "footer.html"}

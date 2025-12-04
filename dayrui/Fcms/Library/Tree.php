@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Library;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -279,15 +279,14 @@ class Tree {
      */
     public function select_category($data, $id = 0, $str = '', $default = ' -- ', $onlysub = 0, $is_push = 0, $is_first = 0) {
 
+        $dir = 'tree';
         if (isset($data[0]) && dr_is_module($data[0])) {
             $mid = $data[0];
             $data = \Phpcmf\Service::L('category', 'module')->get_category($mid);
-            $dir = 'module/category-'.SITE_ID.'-'.$mid.'-select/';
         } else {
             $mid = 'share';
-            $dir = 'module/category-'.SITE_ID.'-share-select/';
         }
-        $name = 'tree2_cache_'.md5(dr_array2string($data).$this->ismain.$mid.$str.$default.$onlysub.$is_push.$is_first);
+        $name = 'tree_cache_'.$mid.SITE_ID.md5(dr_array2string($data).$this->ismain.$mid.$str.$default.$onlysub.$is_push.$is_first);
         if (IS_ADMIN) {
             $name.= 'admin'.md5(\Phpcmf\Service::C()->admin ? dr_array2string(\Phpcmf\Service::C()->admin['roleid']) : '1');
         } else {

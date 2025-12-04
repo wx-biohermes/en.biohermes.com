@@ -7,7 +7,6 @@ if ($code && strpos($code, 'post_time')) {
 
 // 批量执行站点动作
 foreach ($this->site_info as $siteid => $site) {
-
     // 模块
     $module = \Phpcmf\Service::L('cache')->get('module-'.$siteid.'-content');
     if ($module) {
@@ -26,10 +25,11 @@ foreach ($this->site_info as $siteid => $site) {
                 }
             }
             // 定时发布动作
-            $times = \Phpcmf\Service::M()->table($siteid.'_'.$dir.'_time')->where('posttime < '.SYS_TIME)->getAll(1);
+            $times = \Phpcmf\Service::M()->table($siteid.'_'.$dir.'_time')->where('posttime < '.SYS_TIME)->where('error=0')->getAll(1);
             if ($times) {
                 $this->_module_init($dir, $siteid, 1);
                 \Phpcmf\Service::C()->module = $this->module;
+                \Phpcmf\Service::C()->content_model->_init($dir, $siteid);
                 \Phpcmf\Service::C()->content_model->siteid = $siteid;
                 foreach ($times as $t) {
                     $rt = $this->content_model->post_time($t);

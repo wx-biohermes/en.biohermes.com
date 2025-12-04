@@ -83,13 +83,14 @@
                         <div class="form-group">
                             <label class="col-md-2 control-label">{dr_lang('水印位置')}</label>
                             <div class="col-md-9">
-                                <div class="btn-group fc-3x3" data-toggle="buttons">
-                                    {loop $locate $i $t}
-                                    <label class="btn btn-default  {if $data.locate == $i} active{/if}  {if dr_strpos($i, 'bottom')!==false} btn2{/if}">
-                                        <input type="radio" name="data[locate]" {if $data.locate == $i}checked{/if} value="{$i}" class="toggle"> {dr_lang($t)}
-                                    </label>
-                                    {/loop}
-                                </div>
+                                <label>
+                                    <select class="form-control" name="data[locate]">
+                                        {loop $locate $i $t}
+                                        <option {if $i==$data['locate']} selected=""{/if} value="{$i}">{dr_lang($t)}</option>
+                                        {/loop}
+                                    </select>
+                                </label>
+
                                 <span class="help-block">{dr_lang('选择水印在图片中的位置')}</span>
                             </div>
                         </div>

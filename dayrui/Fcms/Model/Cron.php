@@ -1,7 +1,7 @@
 <?php namespace Phpcmf\Model;
 /**
- * www.xunruicms.com
- * 迅睿内容管理框架系统（简称：迅睿CMS）
+ * https://www.wsw88.cn
+ * 网商CMS
  * 本文件是框架系统文件，二次开发时不可以修改本文件，可以通过继承类方法来重写此文件
  **/
 
@@ -51,6 +51,17 @@ class Cron extends \Phpcmf\Model {
 
         $value = dr_string2array($cron['value']);
         switch ($cron['type']) {
+
+            case 'email':
+                // 邮件发送
+                list($error, $value) = \Phpcmf\Service::L('notice')->cron_email($value['config']['tomail'], $cron['site'], $value);
+
+                // 加入队列并执行
+                return $this->save_cron($cron, [
+                    'error' => $error,
+                    'value' => $value,
+                ]);
+                break;
 
             case 'notice':
                 // 通知消息

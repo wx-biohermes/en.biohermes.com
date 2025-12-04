@@ -31,7 +31,7 @@
                         <div class="form-group">
                             <label class="col-md-2 control-label">{dr_lang('系统域名')}</label>
                             <div class="col-md-9">
-                                <textarea class="form-control" style="height:150px" readonly>{implode(PHP_EOL, $domain)}
+                                <textarea class="form-control" style="height:150px" readonly>{php echo is_array($domain) ? implode(PHP_EOL, $domain) : '';}
                                 </textarea>
                             </div>
                         </div>

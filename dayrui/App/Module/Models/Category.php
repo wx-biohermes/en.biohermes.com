@@ -38,7 +38,7 @@ class Category extends \Phpcmf\Model {
                     return dr_return_data(0, dr_lang('目录不能重复（可以在栏目属性设置中关闭重复验证）'));
                 }
             } elseif ($this->table($this->tablename)->where('id<>'.$id)
-                ->where('pdirname=""')->where('dirname', $value)->counts()) {
+                ->where('pdirname=\'\'')->where('dirname', $value)->counts()) {
                 return dr_return_data(0, dr_lang('目录不能重复（可以在栏目属性设置中关闭重复验证）'));
             }
         }
